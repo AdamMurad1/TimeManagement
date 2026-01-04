@@ -14,6 +14,7 @@
             --white: #ffffff;
             --accent: #818cf8;
             --danger: #f43f5e;
+            --success: #10b981;
             --text-main: #1e293b;
             --glass: rgba(255, 255, 255, 0.8);
         }
@@ -56,7 +57,7 @@
 
         /* Forms & Cards */
         .task-form { background: var(--glass); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; margin-bottom: 30px; border: 1px solid rgba(0,0,0,0.05); }
-        .task-card { background: var(--white); padding: 18px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 6px solid var(--primary); }
+        .task-card { background: var(--white); padding: 18px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 6px solid var(--primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
         
         input, select { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: var(--white); color: var(--text-main); }
@@ -69,10 +70,12 @@
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
         .modal-card { background: var(--white); padding: 35px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; }
+        
+        /* ToolBar */
+        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; background: var(--glass); padding: 15px; border-radius: 15px; }
     </style>
 </head>
 <body>
-
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-card">
             <h2>مرحباً بك في مَـدار ✨</h2>
@@ -111,6 +114,7 @@
         
         <div id="home" class="page active">
             <h2 id="welcomeText">أهلاً بك 🎯</h2>
+            
             <div class="task-form">
                 <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                     <input type="text" id="taskInput" style="flex: 3;" placeholder="ما هي مهمتك التالية؟">
@@ -125,6 +129,16 @@
                 </div>
                 <button class="btn" style="width: 100%;" onclick="addTask()">إضافة للمخطط</button>
             </div>
+
+            <div class="toolbar">
+                <input type="text" id="searchInput" placeholder="بحث في المهام..." style="flex: 2;" oninput="renderTasks()">
+                <select id="filterStatus" style="flex: 1;" onchange="renderTasks()">
+                    <option value="all">كل المهام</option>
+                    <option value="pending">قيد التنفيذ</option>
+                    <option value="completed">المكتملة</option>
+                </select>
+            </div>
+
             <div id="tasksList"></div>
         </div>
 
@@ -185,6 +199,7 @@
                         <option value="في اجتماع" data-color="#ef4444">🔴 في اجتماع</option>
                         <option value="إجازة" data-color="#6366f1">🔵 إجازة</option>
                         <option value="خارج العمل" data-color="#94a3b8">⚪ خارج العمل</option>
+                        <option value="ADLAY 😎" data-color="#94a3b8">🤴 ADLAY </option>
                     </select>
                 </div>
             </div>
@@ -199,7 +214,6 @@
         const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
         let myChart = null, daysChart = null;
 
-        // تهيئة الملف الشخصي
         function initProfile() {
             const name = document.getElementById('initialNameInput').value;
             if(!name) return alert("يرجى إدخال الاسم");
@@ -264,7 +278,6 @@
             else btn.disabled = false;
         }
 
-        // نظام المهام
         function showPage(pageId, element) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -272,6 +285,7 @@
             element.classList.add('active');
             if(pageId === 'calendar') renderWeek();
             if(pageId === 'reports') updateReports();
+            if(pageId === 'home') renderTasks();
         }
 
         function addTask() {
@@ -286,16 +300,37 @@
             document.getElementById('taskInput').value = "";
         }
 
+        // تم تعديل هذه الدالة لعرض جميع المهام وإضافة البحث والفلترة
         function renderTasks() {
             const list = document.getElementById('tasksList');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filterValue = document.getElementById('filterStatus').value;
+            
             list.innerHTML = "";
-            [...tasks].reverse().slice(0, 5).forEach(t => {
-                list.innerHTML += `<div class="task-card">
+
+            const filteredTasks = tasks.filter(t => {
+                const matchesSearch = t.text.toLowerCase().includes(searchTerm);
+                const matchesFilter = 
+                    filterValue === 'all' ? true :
+                    filterValue === 'completed' ? t.completed : !t.completed;
+                return matchesSearch && matchesFilter;
+            });
+
+            if (filteredTasks.length === 0) {
+                list.innerHTML = "<p style='text-align:center; opacity:0.5; padding:20px;'>لا توجد مهام مطابقة...</p>";
+                return;
+            }
+
+            [...filteredTasks].reverse().forEach(t => {
+                list.innerHTML += `
+                <div class="task-card" style="border-right-color: ${t.completed ? 'var(--success)' : 'var(--primary)'}">
                     <div style="display:flex; align-items:center; gap:12px;">
                         <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})">
-                        <span style="${t.completed ? 'text-decoration:line-through; opacity:0.5' : ''}"><b>${t.day}</b> | ${t.start} - ${t.text}</span>
+                        <span style="${t.completed ? 'text-decoration:line-through; opacity:0.5' : ''}">
+                            <small style="color:var(--primary); font-weight:bold;">${t.day}</small> | <b>${t.start}</b> - ${t.text}
+                        </span>
                     </div>
-                    <button onclick="deleteTask(${t.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                    <button onclick="deleteTask(${t.id})" style="background:none; border:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
                 </div>`;
             });
         }
@@ -307,9 +342,11 @@
         }
 
         function deleteTask(id) {
-            tasks = tasks.filter(t => t.id !== id);
-            localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
-            renderTasks();
+            if(confirm("هل أنت متأكد من حذف هذه المهمة؟")) {
+                tasks = tasks.filter(t => t.id !== id);
+                localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
+                renderTasks();
+            }
         }
 
         function renderWeek() {
@@ -319,7 +356,7 @@
                 const dayTasks = tasks.filter(t => t.day === day).sort((a,b) => a.start.localeCompare(b.start));
                 grid.innerHTML += `<div class="day-column">
                     <div style="font-weight:800; color:var(--primary); text-align:center; margin-bottom:10px;">${day}</div>
-                    ${dayTasks.map(t => `<div style="background:var(--white); padding:8px; border-radius:10px; font-size:0.8rem; margin-bottom:5px;">${t.start} ${t.text}</div>`).join('') || '<p style="font-size:0.7rem; color:gray; text-align:center;">فارغ</p>'}
+                    ${dayTasks.map(t => `<div style="background:var(--white); padding:8px; border-radius:10px; font-size:0.8rem; margin-bottom:5px; border-right:3px solid ${t.completed ? 'var(--success)' : 'var(--primary)'}">${t.start} ${t.text}</div>`).join('') || '<p style="font-size:0.7rem; color:gray; text-align:center;">فارغ</p>'}
                 </div>`;
             });
         }
@@ -346,13 +383,18 @@
         }
 
         function downloadSchedule() {
-            let res = "📅 الجدول الأسبوعي\n\n";
+            let res = "📅 الجدول الأسبوعي - نظام مدار\n\n";
             days.forEach(d => {
-                tasks.filter(t => t.day === d).forEach(t => res += `| ${d.padEnd(8)} | ${t.start} | ${t.text}\n`);
+                const dayTasks = tasks.filter(t => t.day === d);
+                if(dayTasks.length > 0) {
+                    res += `--- ${d} ---\n`;
+                    dayTasks.forEach(t => res += `[${t.completed ? '✓' : ' '}] ${t.start} : ${t.text}\n`);
+                    res += `\n`;
+                }
             });
             const blob = new Blob(["\ufeff" + res], { type: 'text/plain;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = "Schedule.txt"; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = "Madar_Schedule.txt"; a.click();
         }
 
         function toggleDarkMode() {
@@ -361,7 +403,7 @@
         }
 
         function clearAllData() {
-            if(confirm("سيتم حذف كل شيء!")) { localStorage.clear(); location.reload(); }
+            if(confirm("سيتم حذف كل شيء نهائياً (الملف الشخصي والمهام)! هل أنت متأكد؟")) { localStorage.clear(); location.reload(); }
         }
 
         if(!profile.name) document.getElementById('welcomeModal').style.display = 'flex';

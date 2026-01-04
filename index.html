@@ -21,15 +21,8 @@
         .btn-prime { background: linear-gradient(90deg, #6366f1, #a855f7); position: relative; z-index: 1; }
         .hidden { display: none !important; }
         select option { background: #0f172a; color: white; }
-
-        /* التعديلات الجديدة للمستخدم */
         .user-badge { transition: all 0.4s ease; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .user-badge:hover { 
-            box-shadow: 0 0 25px rgba(99, 102, 241, 0.4); 
-            border-color: rgba(99, 102, 241, 0.5);
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.02);
-        }
+        .user-badge:hover { box-shadow: 0 0 25px rgba(99, 102, 241, 0.4); border-color: rgba(99, 102, 241, 0.5); background: rgba(255, 255, 255, 0.1); transform: scale(1.02); }
         .status-dot { width: 10px; height: 10px; border-radius: 50%; transition: all 0.3s ease; }
         .status-online { background: #10b981; box-shadow: 0 0 10px #10b981; }
         .status-busy { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
@@ -63,7 +56,11 @@
                 <button id="tabWeekBtn" onclick="switchTab('week')" class="tab-btn px-8 py-3 rounded-[18px] text-sm font-bold transition-all duration-500 tab-active">أسبوعي</button>
                 <button id="tabYearBtn" onclick="switchTab('year')" class="tab-btn px-8 py-3 rounded-[18px] text-sm font-bold transition-all duration-500 text-gray-500">سنوي</button>
             </div>
-            <button onclick="logout()" class="text-red-400/60 hover:text-red-400 font-bold">خروج</button>
+            
+            <div class="flex gap-4">
+                <button onclick="downloadReport()" class="text-indigo-400 hover:text-indigo-300 font-bold text-sm">تحميل التقرير 📥</button>
+                <button onclick="logout()" class="text-red-400/60 hover:text-red-400 font-bold text-sm">خروج</button>
+            </div>
         </header>
 
         <div id="luxuryWrapper" class="luxury-transition">
@@ -119,12 +116,15 @@
                 </div>
             </div>
 
-            <div id="itemList" class="space-y-6 pb-24"></div>
+            <div id="itemList" class="space-y-6 pb-12"></div>
+            
+            <div class="text-center pb-24">
+                <button onclick="clearAllData()" class="text-[10px] text-gray-600 hover:text-red-500 transition-colors uppercase tracking-widest font-bold">تصفير كافة سجلات المهمة ⚠️</button>
+            </div>
         </div>
     </div>
 
 <script>
-    // دالة تبديل الحالة الجديدة
     let currentStatus = 'online';
     function toggleStatus() {
         const dot = document.getElementById('statusIndicator');
@@ -277,6 +277,43 @@
         const ctxChart = document.getElementById('statsChart').getContext('2d');
         if(myChart) myChart.destroy();
         myChart = new Chart(ctxChart, { type: 'doughnut', data: { datasets: [{ data: [0, 1], backgroundColor: ['#6366f1', 'rgba(255,255,255,0.03)'], borderWidth: 0 }] }, options: { cutout: '85%' } });
+    }
+
+    // دوال جديدة (التحميل والمسح)
+    function downloadReport() {
+        const data = JSON.parse(localStorage.getItem('data_vault') || '{}')[currentUser] || { week: [], year: [] };
+        let content = `تقرير مهمة ADLAY 2026 - القائد: ${currentUser}\n`;
+        content += `التاريخ: ${new Date().toLocaleString()}\n`;
+        content += `========================================\n\n`;
+
+        content += `--- الخطة الأسبوعية ---\n`;
+        if(data.week.length === 0) content += "لا توجد مهام.\n";
+        data.week.forEach(t => {
+            content += `[${t.done ? '✓' : ' '}] ${t.day} | ${t.time} : ${t.text}\n`;
+        });
+
+        content += `\n--- الخطة السنوية ---\n`;
+        if(data.year.length === 0) content += "لا توجد مهام.\n";
+        data.year.forEach(t => {
+            content += `[${t.done ? '✓' : ' '}] الموعد: ${t.deadline} | النوع: ${t.cat} : ${t.text}\n`;
+        });
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ADLAY_Report_${currentUser}.txt`;
+        a.click();
+    }
+
+    function clearAllData() {
+        if(confirm("تحذير: هل أنت متأكد من مسح جميع بيانات المهام الخاصة بك نهائياً؟")) {
+            let data = JSON.parse(localStorage.getItem('data_vault') || '{}');
+            data[currentUser] = { week: [], year: [] };
+            localStorage.setItem('data_vault', JSON.stringify(data));
+            render();
+            alert("تم تصفير السجلات بنجاح.");
+        }
     }
 
     const canvas = document.getElementById('starfield'); const ctx = canvas.getContext('2d');

@@ -3,326 +3,370 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADLAY 2026</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>مَـدار | النظام المتكامل</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-    
     <style>
-        body { font-family: 'Tajawal', sans-serif; margin: 0; background: #020617; overflow-x: hidden; color: white; }
-        #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        .glass-card { background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8)); backdrop-filter: blur(25px); border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.05); border-top: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); }
-        .luxury-transition { animation: luxuryReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes luxuryReveal { 0% { opacity: 0; transform: scale(0.95) translateY(40px); filter: blur(15px); } 100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); } }
-        .hud-text { font-family: monospace; letter-spacing: 2px; color: #818cf8; background: rgba(129, 140, 248, 0.1); padding: 2px 8px; border-radius: 6px; }
-        .tab-active { background: linear-gradient(135deg, #4f46e5, #9333ea); box-shadow: 0 0 20px rgba(147, 51, 234, 0.3); color: white !important; }
-        .input-style { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .input-style:focus { border-color: #818cf8; background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 25px rgba(99, 102, 241, 0.15); }
-        .btn-prime { background: linear-gradient(90deg, #6366f1, #a855f7); position: relative; z-index: 1; }
-        .hidden { display: none !important; }
-        select option { background: #0f172a; color: white; }
-        .user-badge { transition: all 0.4s ease; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .user-badge:hover { box-shadow: 0 0 25px rgba(99, 102, 241, 0.4); border-color: rgba(99, 102, 241, 0.5); background: rgba(255, 255, 255, 0.1); transform: scale(1.02); }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; transition: all 0.3s ease; }
-        .status-online { background: #10b981; box-shadow: 0 0 10px #10b981; }
-        .status-busy { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
-        .status-offline { background: #6b7280; box-shadow: none; }
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --sidebar-bg: #0f172a;
+            --main-bg: #f8fafc;
+            --white: #ffffff;
+            --accent: #818cf8;
+            --danger: #f43f5e;
+            --text-main: #1e293b;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        body.dark-mode {
+            --main-bg: #020617;
+            --white: #1e293b;
+            --text-main: #f1f5f9;
+            --glass: rgba(30, 41, 59, 0.7);
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0; display: flex; height: 100vh;
+            background-color: var(--main-bg); color: var(--text-main);
+            overflow: hidden; transition: all 0.4s ease;
+        }
+
+        /* Sidebar */
+        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 30px 20px; }
+        .sidebar h1 { font-size: 2.2rem; font-weight: 800; text-align: center; margin-bottom: 40px; background: linear-gradient(to left, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .user-profile {
+            display: flex; align-items: center; gap: 12px; padding: 15px;
+            background: rgba(255,255,255,0.05); border-radius: 18px; 
+            margin-bottom: 25px; cursor: pointer; position: relative;
+        }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: var(--primary); border: 2px solid var(--accent); }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--sidebar-bg); position: absolute; bottom: 18px; right: 55px; }
+
+        .menu-item { padding: 14px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .menu-item:hover { background: rgba(255,255,255,0.1); }
+        .menu-item.active { background: var(--primary); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
+
+        /* Main Content */
+        .main-container { flex: 1; padding: 40px; overflow-y: auto; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Forms & Cards */
+        .task-form { background: var(--glass); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; margin-bottom: 30px; border: 1px solid rgba(0,0,0,0.05); }
+        .task-card { background: var(--white); padding: 18px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 6px solid var(--primary); }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        
+        input, select { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: var(--white); color: var(--text-main); }
+        .btn { cursor: pointer; padding: 14px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 700; transition: 0.3s; }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        /* Grid */
+        .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .day-column { background: var(--glass); padding: 20px; border-radius: 18px; border: 1px solid rgba(0,0,0,0.05); }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-card { background: var(--white); padding: 35px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <canvas id="starfield"></canvas>
+<body>
 
-    <div id="authSection" class="min-h-screen flex items-center justify-center">
-        <div class="glass-card p-12 w-full max-w-md text-center">
-            <div class="mb-8 text-5xl animate-bounce">🪐</div>
-            <h1 class="text-4xl font-black mb-8 tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300">قائد المهمة 2026</h1>
-            <div class="space-y-4">
-                <input type="text" id="username" placeholder="تعريف القائد" class="w-full p-5 rounded-2xl input-style text-center outline-none">
-                <input type="password" id="password" placeholder="كود الوصول" class="w-full p-5 rounded-2xl input-style text-center outline-none">
-                <button onclick="handleLogin()" class="btn-prime w-full py-5 rounded-2xl font-black text-xl transition-transform active:scale-95">تفعيل النظام ⚡</button>
-                <p class="text-[10px] text-gray-500 mt-4 uppercase tracking-widest">اضغط Enter للدخول</p>
+    <div id="welcomeModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2>مرحباً بك في مَـدار ✨</h2>
+            <div style="margin: 20px 0;">
+                <label for="imgUploadInit">
+                    <img id="previewImgInit" src="https://via.placeholder.com/100" class="user-avatar" style="width: 100px; height: 100px; cursor: pointer;">
+                </label>
+                <input type="file" id="imgUploadInit" hidden accept="image/*" onchange="previewFile('previewImgInit', 'imgUploadInit')">
             </div>
+            <input type="text" id="initialNameInput" placeholder="أدخل اسمك..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;">
+            <button class="btn" style="width: 100%;" onclick="initProfile()">ابدأ الرحلة</button>
         </div>
     </div>
 
-    <div id="mainApp" class="max-w-4xl mx-auto hidden">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
-            <div onclick="toggleStatus()" class="user-badge bg-white/5 backdrop-blur-md px-6 py-3 rounded-full flex items-center gap-4 group">
-                <div id="statusIndicator" class="status-dot status-online animate-pulse"></div>
-                <span class="text-sm font-black" id="userDisp"></span>
+    <div class="sidebar">
+        <h1>مَـدار</h1>
+        
+        <div class="user-profile" onclick="showPage('settings', document.getElementById('btn-settings'))">
+            <img id="sideAvatar" src="https://via.placeholder.com/50" class="user-avatar">
+            <div id="sideStatusDot" class="status-dot" style="background: #10b981;"></div>
+            <div>
+                <div style="font-size: 0.9rem; font-weight: bold;" id="sideName">تحميل...</div>
+                <div style="font-size: 0.7rem; opacity: 0.8;" id="sideStatusText">نشط الآن</div>
             </div>
+        </div>
 
-            <div class="flex bg-black/40 p-1.5 rounded-[22px] border border-white/5 backdrop-blur-xl">
-                <button id="tabWeekBtn" onclick="switchTab('week')" class="tab-btn px-8 py-3 rounded-[18px] text-sm font-bold transition-all duration-500 tab-active">أسبوعي</button>
-                <button id="tabYearBtn" onclick="switchTab('year')" class="tab-btn px-8 py-3 rounded-[18px] text-sm font-bold transition-all duration-500 text-gray-500">سنوي</button>
+        <div class="menu-item active" onclick="showPage('home', this)">🏠 الرئيسية</div>
+        <div class="menu-item" onclick="showPage('calendar', this)">📅 مخطط الأسبوع</div>
+        <div class="menu-item" onclick="showPage('reports', this)">📊 التقارير</div>
+        <div class="menu-item" id="btn-settings" onclick="showPage('settings', this)">⚙️ الإعدادات</div>
+        
+        <div class="menu-item" onclick="toggleDarkMode()" style="margin-top: auto; background: rgba(255,255,255,0.05);">🌓 المظهر</div>
+    </div>
+
+    <div class="main-container">
+        
+        <div id="home" class="page active">
+            <h2 id="welcomeText">أهلاً بك 🎯</h2>
+            <div class="task-form">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <input type="text" id="taskInput" style="flex: 3;" placeholder="ما هي مهمتك التالية؟">
+                    <select id="dayInput">
+                        <option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option>
+                        <option>الأربعاء</option><option>الخميس</option><option>الجمعة</option><option>السبت</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
+                    <label>الوقت:</label>
+                    <input type="time" id="startTime"> إلى <input type="time" id="endTime">
+                </div>
+                <button class="btn" style="width: 100%;" onclick="addTask()">إضافة للمخطط</button>
             </div>
+            <div id="tasksList"></div>
+        </div>
+
+        <div id="calendar" class="page">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>الجدول الأسبوعي 📅</h2>
+                <button class="btn" style="background: #10b981;" onclick="downloadSchedule()">📥 تحميل الجدول</button>
+            </div>
+            <div class="week-grid" id="weekGrid"></div>
+        </div>
+
+        <div id="reports" class="page">
+            <h2>الإحصائيات 📊</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div class="task-form" style="text-align: center; margin: 0;">
+                    <span id="totalTasksCount" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">0</span><br>المهام
+                </div>
+                <div class="task-form" style="text-align: center; margin: 0;">
+                    <span id="completedTasksCount" style="font-size: 2.5rem; font-weight: 800; color: #10b981;">0</span><br>المنجزة
+                </div>
+            </div>
+            <div class="task-form">
+                <canvas id="daysChart" style="max-height: 250px; margin-bottom: 40px;"></canvas>
+                <canvas id="productivityChart" style="max-width: 250px; margin: 0 auto;"></canvas>
+            </div>
+        </div>
+
+        <div id="settings" class="page">
+            <h2>الإعدادات ⚙️</h2>
             
-            <div class="flex gap-4">
-                <button onclick="downloadReport()" class="text-indigo-400 hover:text-indigo-300 font-bold text-sm">تحميل التقرير 📥</button>
-                <button onclick="logout()" class="text-red-400/60 hover:text-red-400 font-bold text-sm">خروج</button>
-            </div>
-        </header>
-
-        <div id="luxuryWrapper" class="luxury-transition">
-            <div class="glass-card p-10 mb-10 border-l-4 border-l-indigo-500">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-10">
-                    <div class="flex-1 w-full text-right">
-                        <div class="flex justify-between mb-4">
-                            <h3 id="panelTitle" class="text-xs font-black text-indigo-400 uppercase tracking-[5px]">خطة الأسبوع</h3>
-                            <span class="hud-text text-[10px]" id="currentDate"></span>
-                        </div>
-                        <div class="flex items-baseline gap-2 mb-8">
-                            <span class="text-8xl font-black tracking-tighter" id="percentText">0%</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-6">
-                            <div class="text-center group">
-                                <span class="block text-[10px] text-gray-500 font-bold uppercase">الكل</span>
-                                <span id="statTotal" class="text-3xl font-black italic">0</span>
-                            </div>
-                            <div class="text-center group">
-                                <span class="block text-[10px] text-green-500/50 font-bold uppercase">منجز</span>
-                                <span id="statDone" class="text-3xl font-black text-green-400 italic">0</span>
-                            </div>
-                            <div class="text-center group">
-                                <span class="block text-[10px] text-purple-500/50 font-bold uppercase">باقي</span>
-                                <span id="statPending" class="text-3xl font-black text-purple-400 italic">0</span>
-                            </div>
-                        </div>
+            <div class="task-form">
+                <h3>الملف الشخصي</h3>
+                <div class="setting-row">
+                    <span>الصورة الشخصية</span>
+                    <label for="imgUploadSettings">
+                        <img id="previewImgSettings" src="https://via.placeholder.com/50" class="user-avatar" style="cursor: pointer;">
+                        <input type="file" id="imgUploadSettings" hidden accept="image/*" onchange="previewFile('previewImgSettings', 'imgUploadSettings'); setTimeout(saveNewPhoto, 500)">
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <strong>الاسم</strong><br>
+                        <small id="cooldownHint" style="color: gray;">تغيير كل 7 أيام</small>
                     </div>
-                    <div style="width: 150px;"><canvas id="statsChart"></canvas></div>
+                    <input type="text" id="editNameInput">
+                </div>
+                <button id="saveNameBtn" class="btn" style="margin-top: 15px;" onclick="updateName()">تحديث الاسم</button>
+                <p id="cooldownTimer" style="color: var(--danger); font-size: 0.8rem; display: none; margin-top: 10px;"></p>
+            </div>
+
+            <div class="task-form">
+                <h3>حالة النشاط</h3>
+                <div class="setting-row">
+                    <span>اختر حالتك الحالية</span>
+                    <select id="statusSelect" onchange="updateStatus()">
+                        <option value="نشط الآن" data-color="#10b981">🟢 نشط</option>
+                        <option value="مشغول" data-color="#f59e0b">🟠 مشغول</option>
+                        <option value="في اجتماع" data-color="#ef4444">🔴 في اجتماع</option>
+                        <option value="إجازة" data-color="#6366f1">🔵 إجازة</option>
+                        <option value="خارج العمل" data-color="#94a3b8">⚪ خارج العمل</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="glass-card p-3 mb-10">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <input type="text" id="taskInput" placeholder="ما هي المهمة التالية؟" class="md:col-span-6 p-6 rounded-[24px] bg-transparent outline-none text-xl font-bold">
-                    
-                    <div id="weekOptions" class="md:col-span-4 flex gap-3 p-2">
-                        <select id="taskDay" class="flex-1 bg-white/5 rounded-2xl px-4 outline-none text-xs font-black border border-white/5 appearance-none">
-                            <option value="السبت">السبت</option><option value="الأحد">الأحد</option><option value="الاثنين">الاثنين</option>
-                            <option value="الثلاثاء">الثلاثاء</option><option value="الأربعاء">الأربعاء</option><option value="الخميس">الخميس</option><option value="الجمعة">الجمعة</option>
-                        </select>
-                        <input type="time" id="startTime" class="w-24 bg-white/5 rounded-2xl px-4 outline-none text-xs border border-white/5">
-                    </div>
-
-                    <div id="yearOptions" class="md:col-span-4 flex gap-3 p-2 hidden">
-                        <select id="taskCategory" class="flex-1 bg-white/5 rounded-2xl px-4 outline-none text-xs font-black border border-white/5 appearance-none">
-                            <option value="شخصي">👤 شخصي</option><option value="عمل">💼 عمل</option><option value="صحة">🍎 صحة</option><option value="تعلم">📚 تعلم</option>
-                        </select>
-                        <input type="date" id="yearDeadline" class="w-32 bg-white/5 rounded-2xl px-4 outline-none text-[10px] border border-white/5">
-                    </div>
-
-                    <button onclick="addItem()" class="md:col-span-2 btn-prime rounded-2xl font-black py-4">إضافة</button>
-                </div>
-            </div>
-
-            <div id="itemList" class="space-y-6 pb-12"></div>
-            
-            <div class="text-center pb-24">
-                <button onclick="clearAllData()" class="text-[10px] text-gray-600 hover:text-red-500 transition-colors uppercase tracking-widest font-bold">تصفير كافة سجلات المهمة ⚠️</button>
-            </div>
+            <button class="btn" style="background: var(--danger);" onclick="clearAllData()">🗑 مسح كافة البيانات</button>
         </div>
     </div>
 
-<script>
-    let currentStatus = 'online';
-    function toggleStatus() {
-        const dot = document.getElementById('statusIndicator');
-        if (currentStatus === 'online') {
-            dot.className = 'status-dot status-busy animate-pulse';
-            currentStatus = 'busy';
-        } else if (currentStatus === 'busy') {
-            dot.className = 'status-dot status-offline';
-            currentStatus = 'offline';
-        } else {
-            dot.className = 'status-dot status-online animate-pulse';
-            currentStatus = 'online';
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('madar_v3_final')) || [];
+        let profile = JSON.parse(localStorage.getItem('madar_profile')) || { name: "", img: "", lastUpdate: 0, status: "نشط الآن", statusColor: "#10b981" };
+        const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+        let myChart = null, daysChart = null;
+
+        // تهيئة الملف الشخصي
+        function initProfile() {
+            const name = document.getElementById('initialNameInput').value;
+            if(!name) return alert("يرجى إدخال الاسم");
+            profile.name = name;
+            profile.img = document.getElementById('previewImgInit').src;
+            profile.lastUpdate = Date.now();
+            localStorage.setItem('madar_profile', JSON.stringify(profile));
+            updateUI();
+            document.getElementById('welcomeModal').style.display = 'none';
         }
-    }
 
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            const authSection = document.getElementById('authSection');
-            if (!authSection.classList.contains('hidden')) {
-                handleLogin();
-            } else {
-                const taskInput = document.getElementById('taskInput');
-                if (document.activeElement === taskInput || document.activeElement.tagName === 'SELECT' || document.activeElement.tagName === 'INPUT') {
-                    addItem();
-                }
+        function updateName() {
+            const newName = document.getElementById('editNameInput').value;
+            const now = Date.now();
+            if (now - profile.lastUpdate < 7 * 24 * 60 * 60 * 1000) return alert("لا يمكنك التغيير قبل مرور أسبوع.");
+            profile.name = newName;
+            profile.lastUpdate = now;
+            localStorage.setItem('madar_profile', JSON.stringify(profile));
+            updateUI();
+            checkCooldown();
+        }
+
+        function saveNewPhoto() {
+            profile.img = document.getElementById('previewImgSettings').src;
+            localStorage.setItem('madar_profile', JSON.stringify(profile));
+            updateUI();
+        }
+
+        function updateStatus() {
+            const select = document.getElementById('statusSelect');
+            profile.status = select.value;
+            profile.statusColor = select.options[select.selectedIndex].getAttribute('data-color');
+            localStorage.setItem('madar_profile', JSON.stringify(profile));
+            updateUI();
+        }
+
+        function updateUI() {
+            if(profile.name) {
+                document.getElementById('sideName').innerText = profile.name;
+                document.getElementById('welcomeText').innerText = `أهلاً بك، ${profile.name} 🎯`;
+                document.getElementById('sideAvatar').src = profile.img;
+                document.getElementById('previewImgSettings').src = profile.img;
+                document.getElementById('sideStatusText').innerText = profile.status;
+                document.getElementById('sideStatusDot').style.background = profile.statusColor;
+                document.getElementById('editNameInput').value = profile.name;
+                document.getElementById('statusSelect').value = profile.status;
             }
         }
-    });
 
-    let currentUser = ""; let currentTab = "week"; let myChart;
-    const daysOrder = ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
-    document.getElementById('currentDate').innerText = new Date().toISOString().split('T')[0].replace(/-/g, '.');
-
-    function handleLogin() {
-        const name = document.getElementById('username').value.trim();
-        const pass = document.getElementById('password').value.trim();
-        if(!name || !pass) return;
-        let auth = JSON.parse(localStorage.getItem('auth_vault') || '{}');
-        if(auth[name] && auth[name] !== pass) return alert("كود الوصول خاطئ");
-        auth[name] = pass;
-        localStorage.setItem('auth_vault', JSON.stringify(auth));
-        localStorage.setItem('active_user', name);
-        checkLogin();
-    }
-
-    function checkLogin() {
-        currentUser = localStorage.getItem('active_user');
-        if(currentUser) {
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('userDisp').innerText = currentUser;
-            initChart(); render();
+        function previewFile(previewId, inputId) {
+            const file = document.getElementById(inputId).files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => document.getElementById(previewId).src = reader.result;
+            if (file) reader.readAsDataURL(file);
         }
-    }
 
-    function switchTab(tab) {
-        if(currentTab === tab) return;
-        currentTab = tab;
-        const wrapper = document.getElementById('luxuryWrapper');
-        wrapper.style.animation = 'none'; wrapper.offsetHeight;
-        wrapper.style.animation = 'luxuryReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards';
-        document.getElementById('tabWeekBtn').className = `tab-btn px-8 py-3 rounded-[18px] text-sm font-bold transition-all ${tab === 'week' ? 'tab-active' : 'text-gray-500'}`;
-        document.getElementById('tabYearBtn').className = `tab-btn px-8 py-3 rounded-[18px] text-sm font-bold transition-all ${tab === 'year' ? 'tab-active' : 'text-gray-500'}`;
-        document.getElementById('weekOptions').classList.toggle('hidden', tab !== 'week');
-        document.getElementById('yearOptions').classList.toggle('hidden', tab !== 'year');
-        document.getElementById('panelTitle').innerText = tab === 'week' ? 'خطة الأسبوع' : 'خطة السنة';
-        render();
-    }
-
-    function addItem() {
-        const text = document.getElementById('taskInput').value.trim();
-        if(!text) return;
-        let data = JSON.parse(localStorage.getItem('data_vault') || '{}');
-        if(!data[currentUser]) data[currentUser] = { week: [], year: [] };
-        const item = { id: Date.now(), text, done: false };
-        if(currentTab === 'week') {
-            item.day = document.getElementById('taskDay').value;
-            item.time = document.getElementById('startTime').value || "--:--";
-        } else {
-            item.cat = document.getElementById('taskCategory').value;
-            item.deadline = document.getElementById('yearDeadline').value || "غير محدد";
+        function checkCooldown() {
+            const btn = document.getElementById('saveNameBtn');
+            const now = Date.now();
+            const week = 7 * 24 * 60 * 60 * 1000;
+            if (now - profile.lastUpdate < week) btn.disabled = true;
+            else btn.disabled = false;
         }
-        data[currentUser][currentTab].push(item);
-        localStorage.setItem('data_vault', JSON.stringify(data));
-        document.getElementById('taskInput').value = "";
-        render();
-    }
 
-    function render() {
-        const list = document.getElementById('itemList'); list.innerHTML = "";
-        const data = (JSON.parse(localStorage.getItem('data_vault') || '{}')[currentUser] || { week: [], year: [] })[currentTab];
-        
-        if(currentTab === 'week') {
-            daysOrder.forEach(day => {
-                const dayTasks = data.filter(t => t.day === day);
-                if(dayTasks.length) {
-                    const h = document.createElement('div'); h.className = "flex items-center gap-4 mt-8 mb-4";
-                    h.innerHTML = `<span class="bg-indigo-500/20 text-indigo-400 px-4 py-1 rounded-lg text-[10px] font-black uppercase tracking-[3px]">${day}</span><div class="h-px bg-white/5 flex-1"></div>`;
-                    list.appendChild(h);
-                    dayTasks.sort((a,b) => a.time.localeCompare(b.time)).forEach(t => list.appendChild(createItemEl(t)));
-                }
+        // نظام المهام
+        function showPage(pageId, element) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            element.classList.add('active');
+            if(pageId === 'calendar') renderWeek();
+            if(pageId === 'reports') updateReports();
+        }
+
+        function addTask() {
+            const text = document.getElementById('taskInput').value;
+            const day = document.getElementById('dayInput').value;
+            const start = document.getElementById('startTime').value;
+            const end = document.getElementById('endTime').value;
+            if(!text || !start) return alert("أكمل البيانات");
+            tasks.push({ id: Date.now(), text, day, start, end, completed: false });
+            localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
+            renderTasks();
+            document.getElementById('taskInput').value = "";
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('tasksList');
+            list.innerHTML = "";
+            [...tasks].reverse().slice(0, 5).forEach(t => {
+                list.innerHTML += `<div class="task-card">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})">
+                        <span style="${t.completed ? 'text-decoration:line-through; opacity:0.5' : ''}"><b>${t.day}</b> | ${t.start} - ${t.text}</span>
+                    </div>
+                    <button onclick="deleteTask(${t.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                </div>`;
             });
-        } else {
-            data.forEach(t => list.appendChild(createItemEl(t)));
         }
-        updateStats(data);
-    }
 
-    function createItemEl(t) {
-        const div = document.createElement('div');
-        div.className = `glass-card p-6 flex justify-between items-center transition-all duration-500 ${t.done ? 'opacity-30' : 'hover:translate-x-[-15px] border-r-4 border-r-transparent hover:border-r-indigo-500'}`;
-        const info = currentTab === 'week' ? t.time : `${t.deadline} | ${t.cat}`;
-        
-        div.innerHTML = `
-            <div class="flex items-center gap-8">
-                <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleItem(${t.id})" class="w-7 h-7 rounded-xl accent-indigo-500 cursor-pointer">
-                <div>
-                    <p class="font-black text-xl ${t.done ? 'line-through text-gray-600' : ''}">${t.text}</p>
-                    <span class="hud-text text-[9px] uppercase font-black">${info}</span>
-                </div>
-            </div>
-            <button onclick="deleteItem(${t.id})" class="text-gray-600 hover:text-red-400">✕</button>
-        `;
-        return div;
-    }
-
-    function toggleItem(id) {
-        let data = JSON.parse(localStorage.getItem('data_vault'));
-        data[currentUser][currentTab] = data[currentUser][currentTab].map(t => t.id === id ? {...t, done: !t.done} : t);
-        localStorage.setItem('data_vault', JSON.stringify(data)); render();
-    }
-
-    function deleteItem(id) {
-        let data = JSON.parse(localStorage.getItem('data_vault'));
-        data[currentUser][currentTab] = data[currentUser][currentTab].filter(t => t.id !== id);
-        localStorage.setItem('data_vault', JSON.stringify(data)); render();
-    }
-
-    function updateStats(items) {
-        const done = items.filter(t => t.done).length; const total = items.length;
-        const pct = total ? Math.round((done/total)*100) : 0;
-        document.getElementById('percentText').innerText = pct + '%';
-        document.getElementById('statTotal').innerText = total;
-        document.getElementById('statDone').innerText = done;
-        document.getElementById('statPending').innerText = total - done;
-        if(myChart) { myChart.data.datasets[0].data = [done, total === 0 ? 1 : total - done]; myChart.update(); }
-    }
-
-    function initChart() {
-        const ctxChart = document.getElementById('statsChart').getContext('2d');
-        if(myChart) myChart.destroy();
-        myChart = new Chart(ctxChart, { type: 'doughnut', data: { datasets: [{ data: [0, 1], backgroundColor: ['#6366f1', 'rgba(255,255,255,0.03)'], borderWidth: 0 }] }, options: { cutout: '85%' } });
-    }
-
-    // دوال جديدة (التحميل والمسح)
-    function downloadReport() {
-        const data = JSON.parse(localStorage.getItem('data_vault') || '{}')[currentUser] || { week: [], year: [] };
-        let content = `تقرير مهمة ADLAY 2026 - القائد: ${currentUser}\n`;
-        content += `التاريخ: ${new Date().toLocaleString()}\n`;
-        content += `========================================\n\n`;
-
-        content += `--- الخطة الأسبوعية ---\n`;
-        if(data.week.length === 0) content += "لا توجد مهام.\n";
-        data.week.forEach(t => {
-            content += `[${t.done ? '✓' : ' '}] ${t.day} | ${t.time} : ${t.text}\n`;
-        });
-
-        content += `\n--- الخطة السنوية ---\n`;
-        if(data.year.length === 0) content += "لا توجد مهام.\n";
-        data.year.forEach(t => {
-            content += `[${t.done ? '✓' : ' '}] الموعد: ${t.deadline} | النوع: ${t.cat} : ${t.text}\n`;
-        });
-
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ADLAY_Report_${currentUser}.txt`;
-        a.click();
-    }
-
-    function clearAllData() {
-        if(confirm("تحذير: هل أنت متأكد من مسح جميع بيانات المهام الخاصة بك نهائياً؟")) {
-            let data = JSON.parse(localStorage.getItem('data_vault') || '{}');
-            data[currentUser] = { week: [], year: [] };
-            localStorage.setItem('data_vault', JSON.stringify(data));
-            render();
-            alert("تم تصفير السجلات بنجاح.");
+        function toggleTask(id) {
+            tasks = tasks.map(t => t.id === id ? {...t, completed: !t.completed} : t);
+            localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
+            renderTasks();
         }
-    }
 
-    const canvas = document.getElementById('starfield'); const ctx = canvas.getContext('2d');
-    let stars = []; function initStars() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; stars = Array(400).fill().map(() => ({ x: Math.random() * canvas.width - canvas.width / 2, y: Math.random() * canvas.height - canvas.height / 2, z: Math.random() * canvas.width })); }
-    function updateStars() { ctx.fillStyle = "#020617"; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.translate(canvas.width / 2, canvas.height / 2); stars.forEach(s => { s.z -= 0.6; if (s.z <= 0) s.z = canvas.width; let x = s.x * (canvas.width / s.z); let y = s.y * (canvas.width / s.z); ctx.beginPath(); ctx.arc(x, y, (1 - s.z / canvas.width) * 1.5, 0, Math.PI * 2); ctx.fillStyle = "white"; ctx.fill(); }); ctx.translate(-canvas.width / 2, -canvas.height / 2); requestAnimationFrame(updateStars); }
-    initStars(); updateStars();
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
+            renderTasks();
+        }
 
-    function logout() { localStorage.removeItem('active_user'); location.reload(); }
-    window.onload = checkLogin;
-</script>
+        function renderWeek() {
+            const grid = document.getElementById('weekGrid');
+            grid.innerHTML = "";
+            days.forEach(day => {
+                const dayTasks = tasks.filter(t => t.day === day).sort((a,b) => a.start.localeCompare(b.start));
+                grid.innerHTML += `<div class="day-column">
+                    <div style="font-weight:800; color:var(--primary); text-align:center; margin-bottom:10px;">${day}</div>
+                    ${dayTasks.map(t => `<div style="background:var(--white); padding:8px; border-radius:10px; font-size:0.8rem; margin-bottom:5px;">${t.start} ${t.text}</div>`).join('') || '<p style="font-size:0.7rem; color:gray; text-align:center;">فارغ</p>'}
+                </div>`;
+            });
+        }
+
+        function updateReports() {
+            const total = tasks.length, done = tasks.filter(t => t.completed).length;
+            document.getElementById('totalTasksCount').innerText = total;
+            document.getElementById('completedTasksCount').innerText = done;
+            const isDark = document.body.classList.contains('dark-mode'), textColor = isDark ? '#f1f5f9' : '#1e293b';
+
+            if(daysChart) daysChart.destroy();
+            daysChart = new Chart(document.getElementById('daysChart'), {
+                type: 'bar',
+                data: { labels: days, datasets: [{ label: 'المهام', data: days.map(d => tasks.filter(t => t.day === d).length), backgroundColor: '#6366f1', borderRadius: 8 }] },
+                options: { scales: { y: { ticks: { color: textColor } }, x: { ticks: { color: textColor } } } }
+            });
+
+            if(myChart) myChart.destroy();
+            myChart = new Chart(document.getElementById('productivityChart'), {
+                type: 'doughnut',
+                data: { labels: ['منجز', 'متبقي'], datasets: [{ data: [done, total-done], backgroundColor: ['#10b981', '#e2e8f0'] }] },
+                options: { plugins: { legend: { labels: { color: textColor } } } }
+            });
+        }
+
+        function downloadSchedule() {
+            let res = "📅 الجدول الأسبوعي\n\n";
+            days.forEach(d => {
+                tasks.filter(t => t.day === d).forEach(t => res += `| ${d.padEnd(8)} | ${t.start} | ${t.text}\n`);
+            });
+            const blob = new Blob(["\ufeff" + res], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = "Schedule.txt"; a.click();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        function clearAllData() {
+            if(confirm("سيتم حذف كل شيء!")) { localStorage.clear(); location.reload(); }
+        }
+
+        if(!profile.name) document.getElementById('welcomeModal').style.display = 'flex';
+        else { updateUI(); renderTasks(); }
+        if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+    </script>
 </body>
 </html>

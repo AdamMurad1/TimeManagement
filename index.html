@@ -33,49 +33,68 @@
             overflow: hidden; transition: all 0.4s ease;
         }
 
-        /* Sidebar */
-        .sidebar { width: 280px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 30px 20px; }
-        .sidebar h1 { font-size: 2.2rem; font-weight: 800; text-align: center; margin-bottom: 40px; background: linear-gradient(to left, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .user-profile {
-            display: flex; align-items: center; gap: 12px; padding: 15px;
-            background: rgba(255,255,255,0.05); border-radius: 18px; 
-            margin-bottom: 25px; cursor: pointer; position: relative;
+        /* Sidebar المحدث ليكون قابلاً للإخفاء */
+        .sidebar { 
+            width: 280px; 
+            background: var(--sidebar-bg); 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 30px 20px; 
+            position: fixed; 
+            right: -320px; /* مخفي في اليمين */
+            height: 100%; 
+            z-index: 2000; 
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.3);
         }
+
+        .sidebar.open { right: 0; }
+
+        .menu-toggle {
+            position: fixed; top: 20px; right: 20px; z-index: 2100;
+            background: var(--primary); color: white; border: none;
+            width: 45px; height: 45px; border-radius: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        }
+
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: none; z-index: 1500; backdrop-filter: blur(3px);
+        }
+        .overlay.show { display: block; }
+
+        /* باقي التنسيقات الأصلية دون تعديل */
+        .sidebar h1 { font-size: 2.2rem; font-weight: 800; text-align: center; margin-bottom: 40px; background: linear-gradient(to left, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .user-profile { display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 18px; margin-bottom: 25px; cursor: pointer; position: relative; }
         .user-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: var(--primary); border: 2px solid var(--accent); }
         .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--sidebar-bg); position: absolute; bottom: 18px; right: 55px; }
-
         .menu-item { padding: 14px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
-        .menu-item:hover { background: rgba(255,255,255,0.1); }
         .menu-item.active { background: var(--primary); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
 
-        /* Main Content */
-        .main-container { flex: 1; padding: 40px; overflow-y: auto; }
+        .main-container { flex: 1; padding: 40px; overflow-y: auto; padding-top: 80px; }
         .page { display: none; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Forms & Cards */
         .task-form { background: var(--glass); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; margin-bottom: 30px; border: 1px solid rgba(0,0,0,0.05); }
         .task-card { background: var(--white); padding: 18px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 6px solid var(--primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        
         input, select { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: var(--white); color: var(--text-main); }
         .btn { cursor: pointer; padding: 14px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 700; transition: 0.3s; }
         .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-
-        /* Grid */
         .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
         .day-column { background: var(--glass); padding: 20px; border-radius: 18px; border: 1px solid rgba(0,0,0,0.05); }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 3000; }
         .modal-card { background: var(--white); padding: 35px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; }
-        
-        /* ToolBar */
         .toolbar { display: flex; gap: 10px; margin-bottom: 20px; background: var(--glass); padding: 15px; border-radius: 15px; }
     </style>
 </head>
 <body>
+
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
     <div id="welcomeModal" class="modal-overlay">
         <div class="modal-card">
             <h2>مرحباً بك في مَـدار ✨</h2>
@@ -90,31 +109,26 @@
         </div>
     </div>
 
-    <div class="sidebar">
+    <div id="sidebar" class="sidebar">
         <h1>مَـدار</h1>
-        
         <div class="user-profile" onclick="showPage('settings', document.getElementById('btn-settings'))">
             <img id="sideAvatar" src="https://via.placeholder.com/50" class="user-avatar">
-            <div id="sideStatusDot" class="status-dot" style="background: #10b981;"></div>
+            <div id="sideStatusDot" class="status-dot"></div>
             <div>
                 <div style="font-size: 0.9rem; font-weight: bold;" id="sideName">تحميل...</div>
                 <div style="font-size: 0.7rem; opacity: 0.8;" id="sideStatusText">نشط الآن</div>
             </div>
         </div>
-
         <div class="menu-item active" onclick="showPage('home', this)">🏠 الرئيسية</div>
         <div class="menu-item" onclick="showPage('calendar', this)">📅 مخطط الأسبوع</div>
         <div class="menu-item" onclick="showPage('reports', this)">📊 التقارير</div>
         <div class="menu-item" id="btn-settings" onclick="showPage('settings', this)">⚙️ الإعدادات</div>
-        
         <div class="menu-item" onclick="toggleDarkMode()" style="margin-top: auto; background: rgba(255,255,255,0.05);">🌓 المظهر</div>
     </div>
 
     <div class="main-container">
-        
         <div id="home" class="page active">
             <h2 id="welcomeText">أهلاً بك 🎯</h2>
-            
             <div class="task-form">
                 <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                     <input type="text" id="taskInput" style="flex: 3;" placeholder="ما هي مهمتك التالية؟">
@@ -129,7 +143,6 @@
                 </div>
                 <button class="btn" style="width: 100%;" onclick="addTask()">إضافة للمخطط</button>
             </div>
-
             <div class="toolbar">
                 <input type="text" id="searchInput" placeholder="بحث في المهام..." style="flex: 2;" oninput="renderTasks()">
                 <select id="filterStatus" style="flex: 1;" onchange="renderTasks()">
@@ -138,7 +151,6 @@
                     <option value="completed">المكتملة</option>
                 </select>
             </div>
-
             <div id="tasksList"></div>
         </div>
 
@@ -168,7 +180,6 @@
 
         <div id="settings" class="page">
             <h2>الإعدادات ⚙️</h2>
-            
             <div class="task-form">
                 <h3>الملف الشخصي</h3>
                 <div class="setting-row">
@@ -179,36 +190,34 @@
                     </label>
                 </div>
                 <div class="setting-row">
-                    <div>
-                        <strong>الاسم</strong><br>
-                        <small id="cooldownHint" style="color: gray;">تغيير كل 7 أيام</small>
-                    </div>
+                    <div><strong>الاسم</strong><br><small id="cooldownHint" style="color: gray;">تغيير كل 7 أيام</small></div>
                     <input type="text" id="editNameInput">
                 </div>
                 <button id="saveNameBtn" class="btn" style="margin-top: 15px;" onclick="updateName()">تحديث الاسم</button>
-                <p id="cooldownTimer" style="color: var(--danger); font-size: 0.8rem; display: none; margin-top: 10px;"></p>
             </div>
-
             <div class="task-form">
                 <h3>حالة النشاط</h3>
                 <div class="setting-row">
-                    <span>اختر حالتك الحالية</span>
+                    <span>اختر حالتك</span>
                     <select id="statusSelect" onchange="updateStatus()">
                         <option value="نشط الآن" data-color="#10b981">🟢 نشط</option>
                         <option value="مشغول" data-color="#f59e0b">🟠 مشغول</option>
                         <option value="في اجتماع" data-color="#ef4444">🔴 في اجتماع</option>
-                        <option value="إجازة" data-color="#6366f1">🔵 إجازة</option>
-                        <option value="خارج العمل" data-color="#94a3b8">⚪ خارج العمل</option>
-                        <option value="ADLAY 😎" data-color="#94a3b8">🤴 ADLAY </option>
+                        <option value="ADLAY 😎" data-color="#94a3b8">🤴 ADLAY</option>
                     </select>
                 </div>
             </div>
-
             <button class="btn" style="background: var(--danger);" onclick="clearAllData()">🗑 مسح كافة البيانات</button>
         </div>
     </div>
 
     <script>
+        // دالة السايد بار
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('show');
+        }
+
         let tasks = JSON.parse(localStorage.getItem('madar_v3_final')) || [];
         let profile = JSON.parse(localStorage.getItem('madar_profile')) || { name: "", img: "", lastUpdate: 0, status: "نشط الآن", statusColor: "#10b981" };
         const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
@@ -225,6 +234,20 @@
             document.getElementById('welcomeModal').style.display = 'none';
         }
 
+        function updateUI() {
+            if(profile.name) {
+                document.getElementById('sideName').innerText = profile.name;
+                document.getElementById('welcomeText').innerText = `أهلاً بك، ${profile.name} 🎯`;
+                document.getElementById('sideAvatar').src = profile.img;
+                document.getElementById('previewImgSettings').src = profile.img;
+                document.getElementById('sideStatusText').innerText = profile.status;
+                document.getElementById('sideStatusDot').style.background = profile.statusColor;
+                document.getElementById('editNameInput').value = profile.name;
+                document.getElementById('statusSelect').value = profile.status;
+            }
+            checkCooldown();
+        }
+
         function updateName() {
             const newName = document.getElementById('editNameInput').value;
             const now = Date.now();
@@ -233,7 +256,6 @@
             profile.lastUpdate = now;
             localStorage.setItem('madar_profile', JSON.stringify(profile));
             updateUI();
-            checkCooldown();
         }
 
         function saveNewPhoto() {
@@ -250,31 +272,10 @@
             updateUI();
         }
 
-        function updateUI() {
-            if(profile.name) {
-                document.getElementById('sideName').innerText = profile.name;
-                document.getElementById('welcomeText').innerText = `أهلاً بك، ${profile.name} 🎯`;
-                document.getElementById('sideAvatar').src = profile.img;
-                document.getElementById('previewImgSettings').src = profile.img;
-                document.getElementById('sideStatusText').innerText = profile.status;
-                document.getElementById('sideStatusDot').style.background = profile.statusColor;
-                document.getElementById('editNameInput').value = profile.name;
-                document.getElementById('statusSelect').value = profile.status;
-            }
-        }
-
-        function previewFile(previewId, inputId) {
-            const file = document.getElementById(inputId).files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => document.getElementById(previewId).src = reader.result;
-            if (file) reader.readAsDataURL(file);
-        }
-
         function checkCooldown() {
             const btn = document.getElementById('saveNameBtn');
             const now = Date.now();
-            const week = 7 * 24 * 60 * 60 * 1000;
-            if (now - profile.lastUpdate < week) btn.disabled = true;
+            if (now - profile.lastUpdate < 7 * 24 * 60 * 60 * 1000) btn.disabled = true;
             else btn.disabled = false;
         }
 
@@ -283,6 +284,7 @@
             document.getElementById(pageId).classList.add('active');
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             element.classList.add('active');
+            if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
             if(pageId === 'calendar') renderWeek();
             if(pageId === 'reports') updateReports();
             if(pageId === 'home') renderTasks();
@@ -300,28 +302,17 @@
             document.getElementById('taskInput').value = "";
         }
 
-        // تم تعديل هذه الدالة لعرض جميع المهام وإضافة البحث والفلترة
         function renderTasks() {
             const list = document.getElementById('tasksList');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const filterValue = document.getElementById('filterStatus').value;
-            
             list.innerHTML = "";
-
-            const filteredTasks = tasks.filter(t => {
+            const filtered = tasks.filter(t => {
                 const matchesSearch = t.text.toLowerCase().includes(searchTerm);
-                const matchesFilter = 
-                    filterValue === 'all' ? true :
-                    filterValue === 'completed' ? t.completed : !t.completed;
+                const matchesFilter = filterValue === 'all' ? true : (filterValue === 'completed' ? t.completed : !t.completed);
                 return matchesSearch && matchesFilter;
             });
-
-            if (filteredTasks.length === 0) {
-                list.innerHTML = "<p style='text-align:center; opacity:0.5; padding:20px;'>لا توجد مهام مطابقة...</p>";
-                return;
-            }
-
-            [...filteredTasks].reverse().forEach(t => {
+            [...filtered].reverse().forEach(t => {
                 list.innerHTML += `
                 <div class="task-card" style="border-right-color: ${t.completed ? 'var(--success)' : 'var(--primary)'}">
                     <div style="display:flex; align-items:center; gap:12px;">
@@ -330,7 +321,7 @@
                             <small style="color:var(--primary); font-weight:bold;">${t.day}</small> | <b>${t.start}</b> - ${t.text}
                         </span>
                     </div>
-                    <button onclick="deleteTask(${t.id})" style="background:none; border:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
+                    <button onclick="deleteTask(${t.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
                 </div>`;
             });
         }
@@ -342,7 +333,7 @@
         }
 
         function deleteTask(id) {
-            if(confirm("هل أنت متأكد من حذف هذه المهمة؟")) {
+            if(confirm("حذف المهمة؟")) {
                 tasks = tasks.filter(t => t.id !== id);
                 localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
                 renderTasks();
@@ -366,14 +357,12 @@
             document.getElementById('totalTasksCount').innerText = total;
             document.getElementById('completedTasksCount').innerText = done;
             const isDark = document.body.classList.contains('dark-mode'), textColor = isDark ? '#f1f5f9' : '#1e293b';
-
             if(daysChart) daysChart.destroy();
             daysChart = new Chart(document.getElementById('daysChart'), {
                 type: 'bar',
                 data: { labels: days, datasets: [{ label: 'المهام', data: days.map(d => tasks.filter(t => t.day === d).length), backgroundColor: '#6366f1', borderRadius: 8 }] },
                 options: { scales: { y: { ticks: { color: textColor } }, x: { ticks: { color: textColor } } } }
             });
-
             if(myChart) myChart.destroy();
             myChart = new Chart(document.getElementById('productivityChart'), {
                 type: 'doughnut',
@@ -389,12 +378,18 @@
                 if(dayTasks.length > 0) {
                     res += `--- ${d} ---\n`;
                     dayTasks.forEach(t => res += `[${t.completed ? '✓' : ' '}] ${t.start} : ${t.text}\n`);
-                    res += `\n`;
                 }
             });
             const blob = new Blob(["\ufeff" + res], { type: 'text/plain;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = "Madar_Schedule.txt"; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = "Schedule.txt"; a.click();
+        }
+
+        function previewFile(previewId, inputId) {
+            const file = document.getElementById(inputId).files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => document.getElementById(previewId).src = reader.result;
+            if (file) reader.readAsDataURL(file);
         }
 
         function toggleDarkMode() {
@@ -403,7 +398,7 @@
         }
 
         function clearAllData() {
-            if(confirm("سيتم حذف كل شيء نهائياً (الملف الشخصي والمهام)! هل أنت متأكد؟")) { localStorage.clear(); location.reload(); }
+            if(confirm("حذف كل البيانات؟")) { localStorage.clear(); location.reload(); }
         }
 
         if(!profile.name) document.getElementById('welcomeModal').style.display = 'flex';

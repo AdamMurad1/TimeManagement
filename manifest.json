@@ -1,0 +1,17 @@
+{
+  "name": "إنجاز 2026 Pro",
+  "short_name": "إنجاز",
+  "description": "نظام مدار المتكامل لإدارة الأهداف",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#05070a",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1162/1162456.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,409 +1,928 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مَـدار | النظام المتكامل</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --sidebar-bg: #0f172a;
-            --main-bg: #f8fafc;
-            --white: #ffffff;
-            --accent: #818cf8;
-            --danger: #f43f5e;
-            --success: #10b981;
-            --text-main: #1e293b;
-            --glass: rgba(255, 255, 255, 0.8);
-        }
+    <title>إنجاز 2026 Pro | نظام مَـدار المتكامل</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="إنجاز 2026">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
 
-        body.dark-mode {
-            --main-bg: #020617;
-            --white: #1e293b;
-            --text-main: #f1f5f9;
-            --glass: rgba(30, 41, 59, 0.7);
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ضع كل كود الـ CSS هنا كما هو دون تغيير */
+        :root {
+    /* الوضع الداكن (الافتراضي) */
+    --primary: #6366f1; 
+    --secondary: #a855f7; 
+    --sidebar-bg: #0f172a; 
+    --main-bg: #05070a;
+    --card: rgba(15, 23, 42, 0.8);
+    --text: #ffffff; 
+    --text-sub: #94a3b8;
+    --border: rgba(255, 255, 255, 0.1); 
+}
+
+/* الوضع الفاتح */
+body.light-mode {
+    --sidebar-bg: #f1f5f9;
+    --main-bg: #ffffff;
+    --card: rgba(255, 255, 255, 0.9);
+    --text: #1e293b;
+    --text-sub: #64748b;
+    --border: rgba(0, 0, 0, 0.1);
+}
+        :root {
+            
+            --primary: #6366f1; --secondary: #a855f7; 
+            --sidebar-bg: #0f172a; --main-bg: #05070a;
+            --card: rgba(10, 15, 30, 0.9);
+            --text: #ffffff; --text-sub: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1); 
+            --success: #10b981; --warning: #f59e0b;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Cairo', sans-serif;
             margin: 0; display: flex; height: 100vh;
-            background-color: var(--main-bg); color: var(--text-main);
-            overflow: hidden; transition: all 0.4s ease;
+            background-color: var(--main-bg); color: var(--text);
+            overflow: hidden;
         }
 
-        /* Sidebar المحدث ليكون قابلاً للإخفاء */
+        /* Sidebar Styling */
         .sidebar { 
-            width: 280px; 
-            background: var(--sidebar-bg); 
-            color: white; 
-            display: flex; 
-            flex-direction: column; 
-            padding: 30px 20px; 
-            position: fixed; 
-            right: -320px; /* مخفي في اليمين */
-            height: 100%; 
-            z-index: 2000; 
+            width: 280px; background: var(--sidebar-bg); color: white; 
+            display: flex; flex-direction: column; padding: 30px 20px; 
+            position: fixed; right: -320px; height: 100%; z-index: 2000; 
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: -10px 0 30px rgba(0,0,0,0.3);
         }
-
         .sidebar.open { right: 0; }
 
         .menu-toggle {
             position: fixed; top: 20px; right: 20px; z-index: 2100;
             background: var(--primary); color: white; border: none;
             width: 45px; height: 45px; border-radius: 12px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+            font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
         }
 
-        .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-            display: none; z-index: 1500; backdrop-filter: blur(3px);
+        .main-container { flex: 1; padding: 40px; overflow-y: auto; padding-top: 80px; transition: 0.3s; }
+        
+        .achievement-box {
+            background: linear-gradient(145deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
+            backdrop-filter: blur(15px); border: 1px solid var(--border);
+            border-radius: 30px; padding: 30px; margin-bottom: 20px;
         }
-        .overlay.show { display: block; }
+        .prog-pct { font-size: 3rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px var(--primary); }
+        .prog-track { height: 12px; background: rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; }
+        .prog-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: 1s; }
 
-        /* باقي التنسيقات الأصلية دون تعديل */
-        .sidebar h1 { font-size: 2.2rem; font-weight: 800; text-align: center; margin-bottom: 40px; background: linear-gradient(to left, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .user-profile { display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 18px; margin-bottom: 25px; cursor: pointer; position: relative; }
-        .user-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: var(--primary); border: 2px solid var(--accent); }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--sidebar-bg); position: absolute; bottom: 18px; right: 55px; }
-        .menu-item { padding: 14px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
-        .menu-item.active { background: var(--primary); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; text-align: center; }
 
-        .main-container { flex: 1; padding: 40px; overflow-y: auto; padding-top: 80px; }
+        .glass-panel { background: var(--card); border-radius: 25px; padding: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input, select, button, textarea { padding: 12px; border-radius: 15px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; font-family: 'Cairo'; }
+        
+        .goal-item { 
+            background: rgba(255,255,255,0.03); padding: 18px; border-radius: 20px; 
+            margin-bottom: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border);
+        }
+        .completed { opacity: 0.4; filter: grayscale(1); }
+
         .page { display: none; animation: fadeIn 0.4s ease; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .task-form { background: var(--glass); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; margin-bottom: 30px; border: 1px solid rgba(0,0,0,0.05); }
-        .task-card { background: var(--white); padding: 18px; border-radius: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 6px solid var(--primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        input, select { padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: var(--white); color: var(--text-main); }
-        .btn { cursor: pointer; padding: 14px; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 700; transition: 0.3s; }
-        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        .week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-        .day-column { background: var(--glass); padding: 20px; border-radius: 18px; border: 1px solid rgba(0,0,0,0.05); }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 3000; }
-        .modal-card { background: var(--white); padding: 35px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; }
-        .toolbar { display: flex; gap: 10px; margin-bottom: 20px; background: var(--glass); padding: 15px; border-radius: 15px; }
+        .menu-item { padding: 14px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .menu-item.active { background: var(--primary); }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1500; backdrop-filter: blur(3px); }
+        .overlay.show { display: block; }
+
+        /* Weekly Table Styling */
+        .weekly-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .day-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; padding: 15px; }
+        .day-title { color: var(--primary); font-weight: bold; border-bottom: 1px solid var(--border); margin-bottom: 10px; padding-bottom: 5px; }
+        .day-input { width: 100%; background: transparent; border: none; color: var(--text-sub); font-size: 0.9rem; resize: none; outline: none; }
+   
+/* زر فتح الشات */
+        #chat-circle {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 60px; height: 60px; border-radius: 50%;
+            background: #37474f; color: white; border: none;
+            cursor: pointer; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            z-index: 1000; transition: transform 0.3s;
+        }
+        #chat-circle:hover { transform: scale(1.1); }
+
+        /* نافذة الشات (النمط الغامق) */
+        #chat-window {
+            position: fixed; bottom: 90px; right: 20px;
+            width: 350px; height: 500px; background: #1e1e1e; /* خلفية سوداء مخففة */
+            border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            display: none; flex-direction: column; overflow: hidden;
+            font-family: 'Segoe UI', Arial, sans-serif; z-index: 1000;
+            border: 1px solid #333;
+        }
+
+        /* رأس الشات مع زر الإغلاق */
+        .chat-header { 
+            background: #2d2d2d; color: #fff; padding: 15px; 
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #3d3d3d;
+        }
+        .close-btn { 
+            background: none; border: none; color: #ff5f56; 
+            font-size: 20px; cursor: pointer; font-weight: bold; 
+        }
+
+        /* منطقة الرسائل */
+        #chat-messages { 
+            flex: 1; padding: 15px; overflow-y: auto; 
+            display: flex; flex-direction: column; gap: 12px; 
+            background: #121212; /* خلفية أغمق للرسائل */
+        }
+        
+        .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
+        
+        /* رسالة المستخدم */
+        .user { 
+            background: #007bff; color: white; align-self: flex-start; 
+            border-bottom-right-radius: 2px; 
+        }
+        
+        /* رسالة البوت */
+        .bot { 
+            background: #333; color: #e0e0e0; align-self: flex-end; 
+            border-bottom-left-radius: 2px; border: 1px solid #444;
+        }
+
+        /* منطقة الإدخال */
+        .chat-input-area { 
+            background: #2d2d2d; padding: 12px; 
+            display: flex; border-top: 1px solid #3d3d3d; 
+        }
+        #user-input { 
+            flex: 1; border: none; background: #3d3d3d; color: white; 
+            padding: 8px 12px; border-radius: 20px; outline: none; 
+        }
+        #send-btn { 
+            background: none; border: none; color: #007bff; 
+            margin-right: 10px; cursor: pointer; font-weight: bold; 
+        }
+
+        /* تخصيص شريط التمرير */
+        #chat-messages::-webkit-scrollbar { width: 5px; }
+        #chat-messages::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
     </style>
-</head>
-<body>
+
+
+<body onload="initApp()">
+    <div id="connectionStatus" style="
+    position: fixed; 
+    top: 0; 
+    width: 100%; 
+    padding: 10px; 
+    text-align: center; 
+    font-size: 0.8rem; 
+    font-weight: bold; 
+    z-index: 9999; 
+    display: none; 
+    transition: 0.5s;">
+</div>
+    <div style="position: fixed; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--primary); filter: blur(150px); opacity: 0.15; z-index: -1;"></div>
+<div style="position: fixed; bottom: -10%; right: -10%; width: 500px; height: 500px; background: var(--secondary); filter: blur(180px); opacity: 0.15; z-index: -1;"></div>
+    
 
     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
 
-    <div id="welcomeModal" class="modal-overlay">
-        <div class="modal-card">
-            <h2>مرحباً بك في مَـدار ✨</h2>
-            <div style="margin: 20px 0;">
-                <label for="imgUploadInit">
-                    <img id="previewImgInit" src="https://via.placeholder.com/100" class="user-avatar" style="width: 100px; height: 100px; cursor: pointer;">
-                </label>
-                <input type="file" id="imgUploadInit" hidden accept="image/*" onchange="previewFile('previewImgInit', 'imgUploadInit')">
-            </div>
-            <input type="text" id="initialNameInput" placeholder="أدخل اسمك..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;">
-            <button class="btn" style="width: 100%;" onclick="initProfile()">ابدأ الرحلة</button>
-        </div>
-    </div>
-
-    <div id="sidebar" class="sidebar">
-        <h1>مَـدار</h1>
-        <div class="user-profile" onclick="showPage('settings', document.getElementById('btn-settings'))">
-            <img id="sideAvatar" src="https://via.placeholder.com/50" class="user-avatar">
-            <div id="sideStatusDot" class="status-dot"></div>
-            <div>
-                <div style="font-size: 0.9rem; font-weight: bold;" id="sideName">تحميل...</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;" id="sideStatusText">نشط الآن</div>
-            </div>
-        </div>
-        <div class="menu-item active" onclick="showPage('home', this)">🏠 الرئيسية</div>
-        <div class="menu-item" onclick="showPage('calendar', this)">📅 مخطط الأسبوع</div>
-        <div class="menu-item" onclick="showPage('reports', this)">📊 التقارير</div>
-        <div class="menu-item" id="btn-settings" onclick="showPage('settings', this)">⚙️ الإعدادات</div>
-        <div class="menu-item" onclick="toggleDarkMode()" style="margin-top: auto; background: rgba(255,255,255,0.05);">🌓 المظهر</div>
-    </div>
+   <div id="sidebar" class="sidebar">
+    <h1 style="text-align:center; ">مَـدار 2026</h1>
+    <div class="menu-item active" onclick="showPage('home', this)">🏠 الرئيسية (الأهداف)</div>
+    <div class="menu-item" onclick="showPage('pomodoro-page', this)">⏱️ مؤقت التركيز (55-5)</div> 
+    <div class="menu-item" onclick="showPage('weekly', this)">📅 الجدول الأسبوعي</div>
+    <div class="menu-item" onclick="showPage('reports', this)">📊 التقارير والإحصائيات</div>
+    <div class="menu-item" onclick="showPage('settings', this)">⚙️ الإعدادات</div>
+</div>
 
     <div class="main-container">
+        
         <div id="home" class="page active">
-            <h2 id="welcomeText">أهلاً بك 🎯</h2>
-            <div class="task-form">
-                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                    <input type="text" id="taskInput" style="flex: 3;" placeholder="ما هي مهمتك التالية؟">
-                    <select id="dayInput">
-                        <option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option>
-                        <option>الأربعاء</option><option>الخميس</option><option>الجمعة</option><option>السبت</option>
-                    </select>
+            <header style="margin-bottom: 30px;">
+                <h2 style="margin:0;">لوحة الإنجازات 🚀</h2>
+            </header>
+
+            <div class="achievement-box">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+                    <span style="color: var(--text-sub);">مستوى التقدم الكلي</span>
+                    <span class="prog-pct" id="progValue">0%</span>
                 </div>
-                <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
-                    <label>الوقت:</label>
-                    <input type="time" id="startTime"> إلى <input type="time" id="endTime">
+                <div class="prog-track">
+                    <div id="progFill" class="prog-fill"></div>
                 </div>
-                <button class="btn" style="width: 100%;" onclick="addTask()">إضافة للمخطط</button>
             </div>
-            <div class="toolbar">
-                <input type="text" id="searchInput" placeholder="بحث في المهام..." style="flex: 2;" oninput="renderTasks()">
-                <select id="filterStatus" style="flex: 1;" onchange="renderTasks()">
-                    <option value="all">كل المهام</option>
-                    <option value="pending">قيد التنفيذ</option>
-                    <option value="completed">المكتملة</option>
-                </select>
+
+            <div class="stats-grid">
+                <div class="stat-card"><span id="statTotal" style="font-size:1.8rem; font-weight:900;">0</span><br><small>إجمالي الأهداف</small></div>
+                <div class="stat-card"><span id="statDone" style="font-size:1.8rem; font-weight:900; color:var(--success);">0</span><br><small>تم بنجاح</small></div>
+                <div class="stat-card"><span id="statPending" style="font-size:1.8rem; font-weight:900; color:var(--warning);">0</span><br><small>قيد الانتظار</small></div>
             </div>
-            <div id="tasksList"></div>
+
+            <div class="glass-panel">
+    <input type="text" id="goalTitle" placeholder="ما هي خطتك التالية؟" style="width: 100%; box-sizing: border-box; margin-bottom: 15px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 100px; gap: 10px;">
+        <select id="goalDay">
+            <option value="السبت" style="color: #05070a;">السبت</option>
+            <option value="الأحد"style="color: #05070a;">الأحد</option>
+            <option value="الاثنين"style="color: #05070a;">الاثنين</option>
+            <option value="الثلاثاء"style="color: #05070a;">الثلاثاء</option>
+            <option value="الأربعاء"style="color: #05070a;">الأربعاء</option>
+            <option value="الخميس"style="color: #05070a;">الخميس</option>
+            <option value="الجمعة"style="color: #05070a;">الجمعة</option>
+        </select>
+        <select id="goalCat">
+            <option value="عام"style="color: #05070a;">عام</option>
+            <option value="عمل 💼"style="color: #05070a;">عمل</option>
+            <option value="تطوير 📚"style="color: #05070a;">تطوير</option>
+        </select>
+        <input type="date" id="goalDate">
+        <button onclick="saveGoal()" style="background:var(--primary); border:none; font-weight:bold; cursor:pointer;">إضافة</button>
+    </div>
+    
+</div>
+            <div id="goalsList"></div>
         </div>
 
-        <div id="calendar" class="page">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>الجدول الأسبوعي 📅</h2>
-                <button class="btn" style="background: #10b981;" onclick="downloadSchedule()">📥 تحميل الجدول</button>
-            </div>
-            <div class="week-grid" id="weekGrid"></div>
-        </div>
-
-        <div id="reports" class="page">
-            <h2>الإحصائيات 📊</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-                <div class="task-form" style="text-align: center; margin: 0;">
-                    <span id="totalTasksCount" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">0</span><br>المهام
-                </div>
-                <div class="task-form" style="text-align: center; margin: 0;">
-                    <span id="completedTasksCount" style="font-size: 2.5rem; font-weight: 800; color: #10b981;">0</span><br>المنجزة
-                </div>
-            </div>
-            <div class="task-form">
-                <canvas id="daysChart" style="max-height: 250px; margin-bottom: 40px;"></canvas>
-                <canvas id="productivityChart" style="max-width: 250px; margin: 0 auto;"></canvas>
+        <div id="weekly" class="page">
+            <h2>الجدول الأسبوعي 📅</h2>
+            <div class="glass-panel">
+                <div class="weekly-grid" id="weeklyGrid">
+                    </div>
+                <button onclick="exportWeeklyReport()" style="width:100%; margin-top:10px; background:var(--secondary); border:none; padding:15px; font-weight:bold; cursor:pointer; border-radius:15px;">📥 تحميل الجدول الأسبوعي </button>
             </div>
         </div>
 
+      <div id="reports" class="page">
+    <h2>تحليل الأداء الاحترافي 📊</h2>
+    <div class="stats-grid">
+        <div class="glass-panel" style="grid-column: span 2;">
+            <p style="text-align: center; color: var(--primary); font-weight: bold;">معدل الإنجاز خلال الأسبوع</p>
+            <canvas id="lineChart" style="max-height: 300px;"></canvas>
+        </div>
+        <div class="glass-panel">
+            <p style="text-align: center; color: var(--secondary); font-weight: bold;">توزيع المهام</p>
+            <canvas id="doughnutChart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+    <button onclick="exportReport()" style="width:100%; background:var(--secondary); border:none; padding:15px; font-weight:bold; cursor:pointer; border-radius:15px;">تحميل تقرير </button>
+</div>
         <div id="settings" class="page">
-            <h2>الإعدادات ⚙️</h2>
-            <div class="task-form">
-                <h3>الملف الشخصي</h3>
-                <div class="setting-row">
-                    <span>الصورة الشخصية</span>
-                    <label for="imgUploadSettings">
-                        <img id="previewImgSettings" src="https://via.placeholder.com/50" class="user-avatar" style="cursor: pointer;">
-                        <input type="file" id="imgUploadSettings" hidden accept="image/*" onchange="previewFile('previewImgSettings', 'imgUploadSettings'); setTimeout(saveNewPhoto, 500)">
-                    </label>
-                </div>
-                <div class="setting-row">
-                    <div><strong>الاسم</strong><br><small id="cooldownHint" style="color: gray;">تغيير كل 7 أيام</small></div>
-                    <input type="text" id="editNameInput">
-                </div>
-                <button id="saveNameBtn" class="btn" style="margin-top: 15px;" onclick="updateName()">تحديث الاسم</button>
-            </div>
-            <div class="task-form">
-                <h3>حالة النشاط</h3>
-                <div class="setting-row">
-                    <span>اختر حالتك</span>
-                    <select id="statusSelect" onchange="updateStatus()">
-                        <option value="نشط الآن" data-color="#10b981">🟢 نشط</option>
-                        <option value="مشغول" data-color="#f59e0b">🟠 مشغول</option>
-                        <option value="في اجتماع" data-color="#ef4444">🔴 في اجتماع</option>
-                        <option value="ADLAY 😎" data-color="#94a3b8">🤴 ADLAY</option>
-                    </select>
-                </div>
-            </div>
-            <button class="btn" style="background: var(--danger);" onclick="clearAllData()">🗑 مسح كافة البيانات</button>
+    <h2>الإعدادات والملف الشخصي ⚙️</h2>
+    
+    <div class="glass-panel" style="text-align: center;">
+        <div style="position: relative; display: inline-block;">
+            <img id="profileImgDisplay" src="https://via.placeholder.com/100" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover;">
+            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="updateProfileImage(this)">
+            <button onclick="document.getElementById('imageInput').click()" style="position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; border-radius: 50%; padding: 0; font-size: 0.8rem;">📷</button>
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <input type="text" id="userNameInput" placeholder="اسم المستخدم" style="text-align: center; width: 80%;">
+            <p id="nameTimer" style="font-size: 0.8rem; color: var(--warning); margin-top: 5px;"></p>
+            <button onclick="saveProfileName()" id="saveNameBtn" style="background: var(--primary); width: 80%; margin-top: 10px;">حفظ الاسم</button>
         </div>
     </div>
 
-    <script>
-        // دالة السايد بار
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('show');
+    <div class="glass-panel">
+        <p>إدارة البيانات</p>
+        <button onclick="if(confirm('سيتم حذف كل الأهداف والبيانات، هل أنت متأكد؟')){localStorage.clear(); location.reload();}" style="background:#ef4444; width:100%; border:none; padding:15px; cursor:pointer; border-radius:15px; font-weight:bold;">🗑 مسح كافة البيانات</button>
+    </div>
+</div>
+<div id="pomodoro-page" class="page">
+    <h2>مؤقت التركيز العميق (55-5) ⏱️</h2>
+    
+    <div class="glass-panel" style="text-align: center; padding: 50px 20px; border: 2px solid var(--primary); background: linear-gradient(145deg, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.05));">
+        <p id="timer-status" style="color: var(--text-sub); margin-bottom: 20px;">جاهز للبدء؟</p>
+        
+        <div style="font-size: 6rem; font-weight: 900; margin: 30px 0; font-family: 'monospace'; color: var(--text); text-shadow: 0 0 30px var(--primary);" id="timer-display">55:00</div>
+        <div id="madar-advice-box" class="glass-panel" style="margin-top: 20px; border-left: 4px solid var(--primary); padding: 15px;">
+    <small style="color: var(--primary); display: block; margin-bottom: 5px;">💡 نصيحة مَـدار للتركيز:</small>
+    <p id="advice-text" style="font-style: italic; font-size: 0.95rem; color: var(--text-sub);">
+        "ابدأ بالمهام الصغيرة لتكتسب طاقة للإنجاز."
+    </p>
+</div>
+        
+        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">
+            <button onclick="startTimer()" id="start-btn" style="background: var(--success); padding: 15px 40px; font-size: 1.2rem; font-weight: bold; cursor: pointer; border: none; border-radius: 15px; color: white;">ابدأ التركيز</button>
+            <button onclick="pauseTimer()" id="pause-btn" style="background: var(--warning); padding: 15px 40px; font-size: 1.2rem; font-weight: bold; cursor: pointer; border: none; border-radius: 15px; display: none; color: white;">إيقاف مؤقت</button>
+            <button onclick="resetTimer()" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 15px;">إعادة</button>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 15px;">
+            
+        </div>
+    </div>
+
+    <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+    <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+</div>
+<button id="chat-circle" onclick="toggleChat()">💬</button>
+
+<div id="chat-window">
+    <div class="chat-header">
+        <span>🤖 مساعدك الذكي</span>
+        <button class="close-btn" onclick="toggleChat()">✕</button>
+    </div>
+    <div id="chat-messages">
+        <div class="msg bot">مرحباً! أنا أعمل بالذكاء الاصطناعي بنمط ليلي، كيف أساعدك؟</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="user-input" placeholder="اكتب رسالتك..." onkeypress="handleKeyPress(event)">
+        <button id="send-btn" onclick="askAI()">إرسال</button>
+    </div>
+</div>
+<script>
+    function exportWeeklyReport() {
+    // جلب البيانات المحفوظة من الـ LocalStorage
+    const saved = JSON.parse(localStorage.getItem('weekly_plan_2026') || '{}');
+    
+    if (Object.keys(saved).length === 0) {
+        alert("الجدول فارغ! يرجى كتابة مهام وحفظها أولاً.");
+        return;
+    }
+
+    let reportText = "تطبيق مَـدار 2026 - تقرير الجدول الأسبوعي\n";
+    reportText += "==========================================\n\n";
+
+    // قائمة الأيام بنفس الترتيب المستخدم في التطبيق
+    const weekDays = ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
+
+    weekDays.forEach(day => {
+        const tasks = saved[day] || "لا توجد مهام مسجلة";
+        reportText += `📅 يوم ${day}:\n`;
+        reportText += `${tasks}\n`;
+        reportText += "---------------------------\n";
+    });
+
+    // عملية التحميل
+    const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Weekly_Plan_2026.txt`;
+    link.click();
+    
+    // تنظيف الذاكرة
+    URL.revokeObjectURL(link.href);
+}
+    const currentUser = "default_user";
+    let myChart = null;
+    const days = ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('show');
+    }
+
+    function showPage(pageId, element) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        element.classList.add('active');
+        if(window.innerWidth < 768) toggleSidebar();
+        if(pageId === 'reports') updateChart();
+        if(pageId === 'weekly') loadWeekly();
+    }
+
+    function initApp() {
+        loadData();
+        renderWeeklyInputs();
+        // استدعاء الفحص عند تحميل الصفحة
+checkTimerOnLoad();
+    }
+
+    // Weekly Logic
+  // استبدل وظيفة renderWeeklyInputs بهذه النسخة المطورة
+function renderWeeklyInputs() {
+    const grid = document.getElementById('weeklyGrid');
+    grid.innerHTML = days.map(day => `
+        <div class="day-card" style="border-right: 4px solid var(--primary);">
+            <div class="day-title">${day}</div>
+            <div class="day-input" id="day-${day}" 
+                 style="min-height: 100px; white-space: pre-line; font-size: 0.9rem; color: var(--text-sub);">
+                 </div>
+        </div>
+    `).join('');
+}
+
+    function saveWeekly() {
+        const weeklyData = {};
+        days.forEach(day => {
+            weeklyData[day] = document.getElementById(`day-${day}`).value;
+        });
+        localStorage.setItem('weekly_plan_2026', JSON.stringify(weeklyData));
+        alert('تم حفظ الجدول الأسبوعي بنجاح! ✅');
+    }
+
+   function loadWeekly() {
+    // 1. جلب كافة المهام من المخزن الرئيسي
+    const allData = JSON.parse(localStorage.getItem('user_vault_2026') || '{}');
+    const myGoals = allData[currentUser] || [];
+
+    // 2. تنظيف العرض الحالي في الجدول
+    days.forEach(day => {
+        const dayContainer = document.getElementById(`day-${day}`);
+        
+        // 3. فلترة المهام الخاصة بهذا اليوم فقط
+        const dayTasks = myGoals.filter(g => g.day === day);
+        
+        if (dayTasks.length > 0) {
+            dayContainer.innerHTML = dayTasks.map(g => 
+                `<div style="margin-bottom: 5px; ${g.done ? 'text-decoration: line-through; opacity: 0.5;' : ''}">
+                    ${g.done ? '✅' : '📌'} ${g.title}
+                </div>`
+            ).join('');
+        } else {
+            dayContainer.innerHTML = `<span style="opacity: 0.3; font-style: italic;">لا توجد مهام..</span>`;
         }
+    });
+}
+    // Rest of your original functions
+    function saveGoal() {
+    const title = document.getElementById('goalTitle').value.trim();
+    const date = document.getElementById('goalDate').value;
+    const day = document.getElementById('goalDay').value; // اليوم المختار
+    const category = document.getElementById('goalCat').value;
 
-        let tasks = JSON.parse(localStorage.getItem('madar_v3_final')) || [];
-        let profile = JSON.parse(localStorage.getItem('madar_profile')) || { name: "", img: "", lastUpdate: 0, status: "نشط الآن", statusColor: "#10b981" };
-        const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-        let myChart = null, daysChart = null;
+    if(!title) return;
 
-        function initProfile() {
-            const name = document.getElementById('initialNameInput').value;
-            if(!name) return alert("يرجى إدخال الاسم");
-            profile.name = name;
-            profile.img = document.getElementById('previewImgInit').src;
-            profile.lastUpdate = Date.now();
-            localStorage.setItem('madar_profile', JSON.stringify(profile));
-            updateUI();
-            document.getElementById('welcomeModal').style.display = 'none';
+    // 1. الحفظ في قائمة المهام الرئيسية
+    const allData = JSON.parse(localStorage.getItem('user_vault_2026') || '{}');
+    if(!allData[currentUser]) allData[currentUser] = [];
+    allData[currentUser].push({ 
+        id: Date.now(), title: title, day: day, cat: category, date: date || "بلا تاريخ", done: false 
+    });
+    localStorage.setItem('user_vault_2026', JSON.stringify(allData));
+
+    // 2. الربط مع الجدول الأسبوعي (إضافة المهمة للجدول)
+    const weeklyData = JSON.parse(localStorage.getItem('weekly_plan_2026') || '{}');
+    // إضافة المهمة الجديدة للنص الموجود مسبقاً في ذلك اليوم
+    const currentTasks = weeklyData[day] || "";
+    weeklyData[day] = currentTasks + (currentTasks ? "\n" : "") + `- ${title} (${category})`;
+    
+    localStorage.setItem('weekly_plan_2026', JSON.stringify(weeklyData));
+
+    // إعادة ضبط الحقول وتحديث الواجهة
+    document.getElementById('goalTitle').value = '';
+    loadData();
+    
+    // تنبيه بسيط للمستخدم
+    console.log(`تمت إضافة المهمة لليوم: ${day}`);
+}
+function showPage(pageId, element) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    element.classList.add('active');
+    
+    if(window.innerWidth < 768) toggleSidebar();
+    
+    if(pageId === 'reports') updateChart();
+    
+    // عند فتح صفحة الجدول، قم بتحميل البيانات المحدثة
+    if(pageId === 'weekly') loadWeekly(); 
+}
+    function loadData() {
+        const allData = JSON.parse(localStorage.getItem('user_vault_2026') || '{}');
+        const myGoals = allData[currentUser] || [];
+        const listDiv = document.getElementById('goalsList');
+        listDiv.innerHTML = '';
+        let doneCount = 0;
+
+        myGoals.sort((a,b) => a.done - b.done).forEach(g => {
+            if(g.done) doneCount++;
+            const div = document.createElement('div');
+            div.className = `goal-item ${g.done ? 'completed' : ''}`;
+            div.innerHTML = `
+                <input type="checkbox" ${g.done ? 'checked' : ''} onchange="toggleGoal(${g.id})" style="width:20px; height:20px;">
+                <div style="flex:1">
+                    <b style="display:block;">${g.title}</b>
+                    <small style="color:var(--text-sub)">${g.cat} | 📅 ${g.date}</small>
+                </div>
+                <button onclick="deleteGoal(${g.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+            `;
+            listDiv.appendChild(div);
+        });
+
+        const total = myGoals.length;
+        const percent = total ? Math.round((doneCount / total) * 100) : 0;
+        document.getElementById('progValue').innerText = percent + '%';
+        document.getElementById('progFill').style.width = percent + '%';
+        document.getElementById('statTotal').innerText = total;
+        document.getElementById('statDone').innerText = doneCount;
+        document.getElementById('statPending').innerText = total - doneCount;
+    }
+
+    function toggleGoal(id) {
+        let allData = JSON.parse(localStorage.getItem('user_vault_2026'));
+        allData[currentUser] = allData[currentUser].map(g => g.id === id ? {...g, done: !g.done} : g);
+        localStorage.setItem('user_vault_2026', JSON.stringify(allData));
+        loadData();
+    }
+
+    function deleteGoal(id) {
+        let allData = JSON.parse(localStorage.getItem('user_vault_2026'));
+        allData[currentUser] = allData[currentUser].filter(g => g.id !== id);
+        localStorage.setItem('user_vault_2026', JSON.stringify(allData));
+        loadData();
+    }
+
+    function updateChart() {
+        const allData = JSON.parse(localStorage.getItem('user_vault_2026') || '{}');
+        const myGoals = allData[currentUser] || [];
+        const done = myGoals.filter(g => g.done).length;
+        const pending = myGoals.length - done;
+
+        if(myChart) myChart.destroy();
+        const ctx = document.getElementById('productivityChart').getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['منجز', 'متبقي'],
+                datasets: [{ data: [done, pending], backgroundColor: ['#10b981', '#334155'], borderWidth: 0 }]
+            },
+            options: { plugins: { legend: { labels: { color: '#fff', font: { family: 'Cairo' } } } } }
+        });
+    }
+
+    function exportReport() {
+        const allData = JSON.parse(localStorage.getItem('user_vault_2026') || '{}');
+        const myGoals = allData[currentUser] || [];
+        let txt = "تقرير أهداف 2026\n\n";
+        myGoals.forEach(g => txt += `${g.done ? '[✓]' : '[ ]'} ${g.title} - ${g.date}\n`);
+        const blob = new Blob([txt], {type: 'text/plain'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'report.txt';
+        a.click();
+    }
+    // تحميل بيانات الملف الشخصي عند بدء التطبيق
+function loadProfile() {
+    const profile = JSON.parse(localStorage.getItem('user_profile_2026') || '{}');
+    
+    if (profile.name) document.getElementById('userNameInput').value = profile.name;
+    if (profile.image) document.getElementById('profileImgDisplay').src = profile.image;
+    
+    checkNameChangeAvailability();
+}
+
+// تحديث صورة الملف الشخصي (Base64 لتعمل مع LocalStorage)
+function updateProfileImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageData = e.target.result;
+            document.getElementById('profileImgDisplay').src = imageData;
+            
+            const profile = JSON.parse(localStorage.getItem('user_profile_2026') || '{}');
+            profile.image = imageData;
+            localStorage.setItem('user_profile_2026', JSON.stringify(profile));
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// حفظ الاسم مع شرط السبعة أيام
+function saveProfileName() {
+    const newName = document.getElementById('userNameInput').value.trim();
+    if (!newName) return;
+
+    const profile = JSON.parse(localStorage.getItem('user_profile_2026') || '{}');
+    const now = new Date().getTime();
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+
+    if (profile.lastUpdate && (now - profile.lastUpdate < sevenDaysInMs)) {
+        alert("لا يمكنك تغيير الاسم الآن، يجب مرور 7 أيام على آخر تغيير.");
+        return;
+    }
+
+    profile.name = newName;
+    profile.lastUpdate = now;
+    localStorage.setItem('user_profile_2026', JSON.stringify(profile));
+    
+    alert("تم تحديث الاسم بنجاح! القفل مفعل الآن لمدة 7 أيام.");
+    checkNameChangeAvailability();
+}
+
+// التحقق من حالة القفل وتحديث الواجهة
+function checkNameChangeAvailability() {
+    const profile = JSON.parse(localStorage.getItem('user_profile_2026') || '{}');
+    const input = document.getElementById('userNameInput');
+    const btn = document.getElementById('saveNameBtn');
+    const timerText = document.getElementById('nameTimer');
+
+    if (profile.lastUpdate) {
+        const now = new Date().getTime();
+        const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+        const timePassed = now - profile.lastUpdate;
+
+        if (timePassed < sevenDaysInMs) {
+            const daysLeft = Math.ceil((sevenDaysInMs - timePassed) / (1000 * 60 * 60 * 24));
+            input.disabled = true;
+            btn.style.opacity = "0.5";
+            btn.disabled = true;
+            timerText.innerText = `متاح التغيير بعد ${daysLeft} يوم`;
+        } else {
+            input.disabled = false;
+            btn.style.opacity = "1";
+            btn.disabled = false;
+            timerText.innerText = "يمكنك تغيير الاسم الآن";
         }
+    }
+}
 
-        function updateUI() {
-            if(profile.name) {
-                document.getElementById('sideName').innerText = profile.name;
-                document.getElementById('welcomeText').innerText = `أهلاً بك، ${profile.name} 🎯`;
-                document.getElementById('sideAvatar').src = profile.img;
-                document.getElementById('previewImgSettings').src = profile.img;
-                document.getElementById('sideStatusText').innerText = profile.status;
-                document.getElementById('sideStatusDot').style.background = profile.statusColor;
-                document.getElementById('editNameInput').value = profile.name;
-                document.getElementById('statusSelect').value = profile.status;
+// لا تنسَ إضافة loadProfile() داخل وظيفة initApp() الأصلية
+function initApp() {
+    loadData();
+    renderWeeklyInputs(); // من الكود السابق
+    loadProfile(); // الإضافة الجديدة
+    if (Notification.permission !== 'granted') {
+    Notification.requestPermission();
+    const focusAdvices = [
+    "أبعد هاتفك عن متناول يدك تماماً الآن.",
+    "اشرب كوباً من الماء قبل بدء هذه الجلسة.",
+    "تذكر: الإنجاز المستمر الصغير أفضل من الانقطاع الكبير.",
+    "ركز على مهمة واحدة فقط، تعدد المهام يشتت ذكاءك.",
+    "خذ نفساً عميقاً.. أنت تقوم بعمل رائع!",
+    "إذا شعرت بالتعب، تذكر لماذا بدأت.",
+    "البيئة المنظمة تساعد على عقل منظم، رتب مكتبك سريعاً.",
+    "لا تنتظر التحفيز، ابدأ وسوف يلحق بك التحفيز لاحقاً."
+];
+function showMadarAdvice() {
+    const adviceText = document.getElementById('advice-text');
+    if (adviceText) {
+        const randomIndex = Math.floor(Math.random() * focusAdvices.length);
+        adviceText.innerText = `"${focusAdvices[randomIndex]}"`;
+    }
+}
+}
+}
+function deleteGoal(id) {
+    // إظهار رسالة تأكيد للمستخدم
+    const confirmDelete = confirm("هل أنت متأكد من حذف هذه المهمة نهائياً؟");
+
+    // إذا ضغط المستخدم على "موافق" يتم الحذف
+    if (confirmDelete) {
+        let allData = JSON.parse(localStorage.getItem('user_vault_2026'));
+        allData[currentUser] = allData[currentUser].filter(g => g.id !== id);
+        localStorage.setItem('user_vault_2026', JSON.stringify(allData));
+        loadData();
+    }
+    // إذا ضغط "إلغاء" لن يحدث شيء وتبقى المهمة
+}
+let myLineChart = null;
+let myDoughnutChart = null;
+
+function updateChart() {
+    const allData = JSON.parse(localStorage.getItem('user_vault_2026') || '{}');
+    const myGoals = allData[currentUser] || [];
+    
+    // بيانات الرسم الدائري
+    const done = myGoals.filter(g => g.done).length;
+    const pending = myGoals.length - done;
+
+    // بيانات الرسم الخطي (مثال بناءً على الأيام)
+    const daysLabels = ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
+    const completionData = daysLabels.map(day => {
+        return myGoals.filter(g => g.day === day && g.done).length;
+    });
+
+    // تنظيف الرسوم القديمة
+    if(myLineChart) myLineChart.destroy();
+    if(myDoughnutChart) myDoughnutChart.destroy();
+
+    const ctxLine = document.getElementById('lineChart').getContext('2d');
+    const ctxDonut = document.getElementById('doughnutChart').getContext('2d');
+
+    // 1. الرسم البياني الخطي (التقدم الأسبوعي)
+    myLineChart = new Chart(ctxLine, {
+        type: 'line',
+        data: {
+            labels: daysLabels,
+            datasets: [{
+                label: 'المهام المكتملة',
+                data: completionData,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                fill: true,
+                tension: 0.4, // لجعل الخط منحني بشكل انسيابي
+                pointRadius: 5
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { family: 'Cairo' } } }
             }
-            checkCooldown();
         }
+    });
 
-        function updateName() {
-            const newName = document.getElementById('editNameInput').value;
-            const now = Date.now();
-            if (now - profile.lastUpdate < 7 * 24 * 60 * 60 * 1000) return alert("لا يمكنك التغيير قبل مرور أسبوع.");
-            profile.name = newName;
-            profile.lastUpdate = now;
-            localStorage.setItem('madar_profile', JSON.stringify(profile));
-            updateUI();
+    // 2. الرسم البياني الدائري (التوزيع)
+    myDoughnutChart = new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+            labels: ['منجز', 'متبقي'],
+            datasets: [{
+                data: [done, pending],
+                backgroundColor: ['#10b981', '#1e293b'],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            cutout: '70%', // لجعل الدائرة أنحف وأكثر عصرية
+            plugins: { legend: { position: 'bottom', labels: { color: '#fff', font: { family: 'Cairo' } } } }
         }
+    });
+}
+const CACHE_NAME = 'madar-cache-v1';
+const assets = ['./', './index.html'];
 
-        function saveNewPhoto() {
-            profile.img = document.getElementById('previewImgSettings').src;
-            localStorage.setItem('madar_profile', JSON.stringify(profile));
-            updateUI();
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(assets)));
+});
+
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+});
+let timer;
+let isRunning = false;
+
+// 1. تحديث شكل العداد
+function updateDisplay(secondsLeft) {
+ let minutes = Math.floor(secondsLeft / 60);
+    let seconds = secondsLeft % 60;
+    let timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('timer-display').textContent = timeString;
+    
+    const mode = localStorage.getItem('pomodoro_mode') || 'focus';
+    document.title = `(${timeString}) ${mode === 'focus' ? 'تركيز' : 'راحة'}`;
+}
+
+// 2. بدء المؤقت (مع ميزة الحفظ عند التحديث)
+function startTimer() {
+if (isRunning) return;
+
+    let endTime = localStorage.getItem('pomodoro_end_time');
+    
+    if (!endTime) {
+        // إذا بدأنا من جديد، نحسب وقت النهاية ونخزنه
+        let timeLeft = parseInt(localStorage.getItem('pomodoro_time_left')) || 55 * 60;
+        endTime = Date.now() + (timeLeft * 1000);
+        localStorage.setItem('pomodoro_end_time', endTime);
+    }
+
+    isRunning = true;
+    document.getElementById('start-btn').style.display = 'none';
+    document.getElementById('pause-btn').style.display = 'inline-block';
+
+    timer = setInterval(() => {
+        let now = Date.now();
+        let secondsLeft = Math.round((endTime - now) / 1000);
+
+        if (secondsLeft > 0) {
+            updateDisplay(secondsLeft);
+            localStorage.setItem('pomodoro_time_left', secondsLeft);
+        } else {
+            handleTimerEnd();
         }
+    }, 1000);
+}
+// 3. ماذا يحدث عند انتهاء الوقت (التبديل التلقائي والإشعارات)
+function handleTimerEnd() {
+  clearInterval(timer);
+    isRunning = false;
+    localStorage.removeItem('pomodoro_end_time');
+    document.getElementById('alarm-sound').play();
 
-        function updateStatus() {
-            const select = document.getElementById('statusSelect');
-            profile.status = select.value;
-            profile.statusColor = select.options[select.selectedIndex].getAttribute('data-color');
-            localStorage.setItem('madar_profile', JSON.stringify(profile));
-            updateUI();
-        }
+    let mode = localStorage.getItem('pomodoro_mode') || 'focus';
 
-        function checkCooldown() {
-            const btn = document.getElementById('saveNameBtn');
-            const now = Date.now();
-            if (now - profile.lastUpdate < 7 * 24 * 60 * 60 * 1000) btn.disabled = true;
-            else btn.disabled = false;
-        }
+    if (mode === 'focus') {
+        localStorage.setItem('pomodoro_mode', 'break');
+        localStorage.setItem('pomodoro_time_left', 5 * 60);
+        startTimer(); // استراحة تلقائية
+    } else {
+        localStorage.setItem('pomodoro_mode', 'focus');
+        localStorage.setItem('pomodoro_time_left', 55 * 60);
+        updateDisplay(55 * 60);
+        showMadarAdvice(); // <--- تحديث النصيحة هنا
 
-        function showPage(pageId, element) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            element.classList.add('active');
-            if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
-            if(pageId === 'calendar') renderWeek();
-            if(pageId === 'reports') updateReports();
-            if(pageId === 'home') renderTasks();
-        }
-
-        function addTask() {
-            const text = document.getElementById('taskInput').value;
-            const day = document.getElementById('dayInput').value;
-            const start = document.getElementById('startTime').value;
-            const end = document.getElementById('endTime').value;
-            if(!text || !start) return alert("أكمل البيانات");
-            tasks.push({ id: Date.now(), text, day, start, end, completed: false });
-            localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
-            renderTasks();
-            document.getElementById('taskInput').value = "";
-        }
-
-        function renderTasks() {
-            const list = document.getElementById('tasksList');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filterValue = document.getElementById('filterStatus').value;
-            list.innerHTML = "";
-            const filtered = tasks.filter(t => {
-                const matchesSearch = t.text.toLowerCase().includes(searchTerm);
-                const matchesFilter = filterValue === 'all' ? true : (filterValue === 'completed' ? t.completed : !t.completed);
-                return matchesSearch && matchesFilter;
-            });
-            [...filtered].reverse().forEach(t => {
-                list.innerHTML += `
-                <div class="task-card" style="border-right-color: ${t.completed ? 'var(--success)' : 'var(--primary)'}">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id})">
-                        <span style="${t.completed ? 'text-decoration:line-through; opacity:0.5' : ''}">
-                            <small style="color:var(--primary); font-weight:bold;">${t.day}</small> | <b>${t.start}</b> - ${t.text}
-                        </span>
-                    </div>
-                    <button onclick="deleteTask(${t.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
-                </div>`;
-            });
-        }
-
-        function toggleTask(id) {
-            tasks = tasks.map(t => t.id === id ? {...t, completed: !t.completed} : t);
-            localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
-            renderTasks();
-        }
-
-        function deleteTask(id) {
-            if(confirm("حذف المهمة؟")) {
-                tasks = tasks.filter(t => t.id !== id);
-                localStorage.setItem('madar_v3_final', JSON.stringify(tasks));
-                renderTasks();
+        // التنبيه قبل بدء الجلسة الجديدة
+        setTimeout(() => {
+            if (confirm("انتهت الاستراحة! هل تريد بدء جلسة تركيز جديدة؟")) {
+                startTimer();
+            } else {
+                document.getElementById('start-btn').style.display = 'inline-block';
+                document.getElementById('pause-btn').style.display = 'none';
             }
-        }
+        }, 500);
+    }
+}
+// 4. إيقاف مؤقت
+function pauseTimer() {
+  clearInterval(timer);
+    isRunning = false;
+    localStorage.removeItem('pomodoro_end_time');
+    document.getElementById('start-btn').style.display = 'inline-block';
+    document.getElementById('pause-btn').style.display = 'none';
+}
 
-        function renderWeek() {
-            const grid = document.getElementById('weekGrid');
-            grid.innerHTML = "";
-            days.forEach(day => {
-                const dayTasks = tasks.filter(t => t.day === day).sort((a,b) => a.start.localeCompare(b.start));
-                grid.innerHTML += `<div class="day-column">
-                    <div style="font-weight:800; color:var(--primary); text-align:center; margin-bottom:10px;">${day}</div>
-                    ${dayTasks.map(t => `<div style="background:var(--white); padding:8px; border-radius:10px; font-size:0.8rem; margin-bottom:5px; border-right:3px solid ${t.completed ? 'var(--success)' : 'var(--primary)'}">${t.start} ${t.text}</div>`).join('') || '<p style="font-size:0.7rem; color:gray; text-align:center;">فارغ</p>'}
-                </div>`;
+// 5. إعادة الضبط
+function resetTimer() {
+    pauseTimer();
+    localStorage.setItem('pomodoro_mode', 'focus');
+    localStorage.setItem('pomodoro_time_left', 55 * 60);
+    updateDisplay(55 * 60);
+}
+
+// 6. فحص العداد عند فتح الصفحة (لكي لا يتوقف)
+function checkTimerOnLoad() {
+let endTime = localStorage.getItem('pomodoro_end_time');
+    
+    if (endTime) {
+        let now = Date.now();
+        if (now < endTime) {
+            startTimer(); // يستأنف تلقائياً لأن الوقت لم ينتهِ بعد
+        } else {
+            handleTimerEnd(); // انتهى الوقت وأنت خارج الموقع
+        }
+    } else {
+        let timeLeft = localStorage.getItem('pomodoro_time_left') || 55 * 60;
+        updateDisplay(parseInt(timeLeft));
+    }
+}
+// استدعاء الفحص عند تحميل الصفحة
+checkTimerOnLoad();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // نستخدم ./sw.js للتأكد من المسار الصحيح في GitHub Pages
+        navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('تم تفعيل ميزة العمل دون إنترنت ✅'))
+        .catch(err => console.log('فشل تفعيل الميزة ❌', err));
+    });
+}
+const API_KEY = "ضـع_مفتاح_الـ_API_الخاص_بك_هنا";
+
+    function toggleChat() {
+        const win = document.getElementById('chat-window');
+        win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === 'Enter') askAI();
+    }
+
+    async function askAI() {
+        const inputField = document.getElementById('user-input');
+        const messageBox = document.getElementById('chat-messages');
+        const text = inputField.value.trim();
+
+        if (!text) return;
+
+        // عرض رسالة المستخدم
+        messageBox.innerHTML += `<div class="msg user">${text}</div>`;
+        inputField.value = '';
+        messageBox.scrollTop = messageBox.scrollHeight;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: text }] }]
+                })
             });
-        }
 
-        function updateReports() {
-            const total = tasks.length, done = tasks.filter(t => t.completed).length;
-            document.getElementById('totalTasksCount').innerText = total;
-            document.getElementById('completedTasksCount').innerText = done;
-            const isDark = document.body.classList.contains('dark-mode'), textColor = isDark ? '#f1f5f9' : '#1e293b';
-            if(daysChart) daysChart.destroy();
-            daysChart = new Chart(document.getElementById('daysChart'), {
-                type: 'bar',
-                data: { labels: days, datasets: [{ label: 'المهام', data: days.map(d => tasks.filter(t => t.day === d).length), backgroundColor: '#6366f1', borderRadius: 8 }] },
-                options: { scales: { y: { ticks: { color: textColor } }, x: { ticks: { color: textColor } } } }
-            });
-            if(myChart) myChart.destroy();
-            myChart = new Chart(document.getElementById('productivityChart'), {
-                type: 'doughnut',
-                data: { labels: ['منجز', 'متبقي'], datasets: [{ data: [done, total-done], backgroundColor: ['#10b981', '#e2e8f0'] }] },
-                options: { plugins: { legend: { labels: { color: textColor } } } }
-            });
-        }
+            const data = await response.json();
+            const aiResponse = data.candidates[0].content.parts[0].text;
 
-        function downloadSchedule() {
-            let res = "📅 الجدول الأسبوعي - نظام مدار\n\n";
-            days.forEach(d => {
-                const dayTasks = tasks.filter(t => t.day === d);
-                if(dayTasks.length > 0) {
-                    res += `--- ${d} ---\n`;
-                    dayTasks.forEach(t => res += `[${t.completed ? '✓' : ' '}] ${t.start} : ${t.text}\n`);
-                }
-            });
-            const blob = new Blob(["\ufeff" + res], { type: 'text/plain;charset=utf-8' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = "Schedule.txt"; a.click();
+            messageBox.innerHTML += `<div class="msg bot">${aiResponse}</div>`;
+        } catch (error) {
+            messageBox.innerHTML += `<div class="msg bot" style="color:#ff5f56;">خطأ: تأكد من مفتاح API.</div>`;
         }
-
-        function previewFile(previewId, inputId) {
-            const file = document.getElementById(inputId).files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => document.getElementById(previewId).src = reader.result;
-            if (file) reader.readAsDataURL(file);
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-        }
-
-        function clearAllData() {
-            if(confirm("حذف كل البيانات؟")) { localStorage.clear(); location.reload(); }
-        }
-
-        if(!profile.name) document.getElementById('welcomeModal').style.display = 'flex';
-        else { updateUI(); renderTasks(); }
-        if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
-    </script>
+        messageBox.scrollTop = messageBox.scrollHeight;
+    }
+</script>
 </body>
 </html>

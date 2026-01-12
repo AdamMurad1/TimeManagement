@@ -112,75 +112,7 @@ body.light-mode {
         .day-title { color: var(--primary); font-weight: bold; border-bottom: 1px solid var(--border); margin-bottom: 10px; padding-bottom: 5px; }
         .day-input { width: 100%; background: transparent; border: none; color: var(--text-sub); font-size: 0.9rem; resize: none; outline: none; }
    
-/* زر فتح الشات */
-        #chat-circle {
-            position: fixed; bottom: 20px; right: 20px;
-            width: 60px; height: 60px; border-radius: 50%;
-            background: #37474f; color: white; border: none;
-            cursor: pointer; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            z-index: 1000; transition: transform 0.3s;
-        }
-        #chat-circle:hover { transform: scale(1.1); }
 
-        /* نافذة الشات (النمط الغامق) */
-        #chat-window {
-            position: fixed; bottom: 90px; right: 20px;
-            width: 350px; height: 500px; background: #1e1e1e; /* خلفية سوداء مخففة */
-            border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-            display: none; flex-direction: column; overflow: hidden;
-            font-family: 'Segoe UI', Arial, sans-serif; z-index: 1000;
-            border: 1px solid #333;
-        }
-
-        /* رأس الشات مع زر الإغلاق */
-        .chat-header { 
-            background: #2d2d2d; color: #fff; padding: 15px; 
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #3d3d3d;
-        }
-        .close-btn { 
-            background: none; border: none; color: #ff5f56; 
-            font-size: 20px; cursor: pointer; font-weight: bold; 
-        }
-
-        /* منطقة الرسائل */
-        #chat-messages { 
-            flex: 1; padding: 15px; overflow-y: auto; 
-            display: flex; flex-direction: column; gap: 12px; 
-            background: #121212; /* خلفية أغمق للرسائل */
-        }
-        
-        .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 14px; line-height: 1.4; }
-        
-        /* رسالة المستخدم */
-        .user { 
-            background: #007bff; color: white; align-self: flex-start; 
-            border-bottom-right-radius: 2px; 
-        }
-        
-        /* رسالة البوت */
-        .bot { 
-            background: #333; color: #e0e0e0; align-self: flex-end; 
-            border-bottom-left-radius: 2px; border: 1px solid #444;
-        }
-
-        /* منطقة الإدخال */
-        .chat-input-area { 
-            background: #2d2d2d; padding: 12px; 
-            display: flex; border-top: 1px solid #3d3d3d; 
-        }
-        #user-input { 
-            flex: 1; border: none; background: #3d3d3d; color: white; 
-            padding: 8px 12px; border-radius: 20px; outline: none; 
-        }
-        #send-btn { 
-            background: none; border: none; color: #007bff; 
-            margin-right: 10px; cursor: pointer; font-weight: bold; 
-        }
-
-        /* تخصيص شريط التمرير */
-        #chat-messages::-webkit-scrollbar { width: 5px; }
-        #chat-messages::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
     </style>
 
 
@@ -335,21 +267,7 @@ body.light-mode {
 
     <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 </div>
-<button id="chat-circle" onclick="toggleChat()">💬</button>
 
-<div id="chat-window">
-    <div class="chat-header">
-        <span>🤖 مساعدك الذكي</span>
-        <button class="close-btn" onclick="toggleChat()">✕</button>
-    </div>
-    <div id="chat-messages">
-        <div class="msg bot">مرحباً! أنا أعمل بالذكاء الاصطناعي بنمط ليلي، كيف أساعدك؟</div>
-    </div>
-    <div class="chat-input-area">
-        <input type="text" id="user-input" placeholder="اكتب رسالتك..." onkeypress="handleKeyPress(event)">
-        <button id="send-btn" onclick="askAI()">إرسال</button>
-    </div>
-</div>
 <script>
     function exportWeeklyReport() {
     // جلب البيانات المحفوظة من الـ LocalStorage
@@ -423,15 +341,30 @@ function renderWeeklyInputs() {
     `).join('');
 }
 
-    function saveWeekly() {
-        const weeklyData = {};
-        days.forEach(day => {
-            weeklyData[day] = document.getElementById(`day-${day}`).value;
-        });
-        localStorage.setItem('weekly_plan_2026', JSON.stringify(weeklyData));
-        alert('تم حفظ الجدول الأسبوعي بنجاح! ✅');
-    }
+  function saveWeekly() {
+    const weeklyData = {};
 
+    days.forEach(day => {
+        // 1. نصل إلى الحاوية التي تحتوي على قائمة المهام لهذا اليوم
+        const listContainer = document.getElementById(`list-${day}`);
+        
+        if (listContainer) {
+            // 2. نجمع فقط نصوص المهام الموجودة فعلياً داخل القائمة حالياً
+            // نفترض أن نص المهمة موجود داخل span أو div بداخل الـ li
+            const tasks = Array.from(listContainer.querySelectorAll('.task-text'))
+                               .map(task => task.textContent.trim());
+
+            weeklyData[day] = tasks;
+        } else {
+            weeklyData[day] = [];
+        }
+    });
+
+    // 3. تخزين البيانات النهائية (التي لا تحتوي على أي مهمة تم حذفها من الواجهة)
+    localStorage.setItem('weekly_plan_2026', JSON.stringify(weeklyData));
+    
+    alert('تم تحديث وحفظ القائمة الحالية بنجاح! ✅');
+}
    function loadWeekly() {
     // 1. جلب كافة المهام من المخزن الرئيسي
     const allData = JSON.parse(localStorage.getItem('user_vault_2026') || '{}');
@@ -882,49 +815,7 @@ if ('serviceWorker' in navigator) {
         .catch(err => console.log('فشل تفعيل الميزة ❌', err));
     });
 }
-const API_KEY = "AIzaSyAaFd7gzZjqXED6NaY_tsgkW_m-UbSdSjQ";
 
-    function toggleChat() {
-        const win = document.getElementById('chat-window');
-        win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
-    }
-
-    function handleKeyPress(e) {
-        if (e.key === 'Enter') askAI();
-    }
-
-    async function askAI() {
-        const inputField = document.getElementById('user-input');
-        const messageBox = document.getElementById('chat-messages');
-        const text = inputField.value.trim();
-
-        if (!text) return;
-
-        // عرض رسالة المستخدم
-        messageBox.innerHTML += `<div class="msg user">${text}</div>`;
-        inputField.value = '';
-        messageBox.scrollTop = messageBox.scrollHeight;
-
-        try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: text }] }]
-                })
-            });
-
-            const data = await response.json();
-            const aiResponse = data.candidates[0].content.parts[0].text;
-
-            messageBox.innerHTML += `<div class="msg bot">${aiResponse}</div>`;
-        } catch (error) {
-            messageBox.innerHTML += `<div class="msg bot" style="color:#ff5f56;">خطأ: تأكد من مفتاح API.</div>`;
-        }
-        messageBox.scrollTop = messageBox.scrollHeight;
-    }
 </script>
 </body>
 </html>
-
-
